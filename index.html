@@ -285,6 +285,53 @@ dl.kv dd{font-weight:800;font-size:.93rem;margin-top:2px;overflow-wrap:anywhere;
 .src{font-size:.8rem;color:var(--ink-2);}
 .src a{color:var(--blue);font-weight:700;}
 
+
+/* ── Rayons en 3D : tuiles colorées qui oscillent, s'inclinent et projettent leur ombre ── */
+.cats3{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:clamp(14px,2vw,24px);padding:6px 4px 26px;perspective:1100px;}
+.c3{position:relative;display:block;text-decoration:none;color:#fff;outline:none;-webkit-tap-highlight-color:transparent;
+  animation:c3in .9s cubic-bezier(.2,.9,.25,1.15) both;animation-delay:calc(var(--i) * 85ms);transform-style:preserve-3d;}
+@keyframes c3in{from{opacity:0;transform:translateY(40px) rotateX(-70deg) scale(.9);}}
+.c3-sway{display:block;transform-style:preserve-3d;animation:c3sway 7s ease-in-out infinite;animation-delay:calc(var(--i) * -1.15s);}
+@keyframes c3sway{0%,100%{transform:rotateY(-9deg) rotateX(4deg);}50%{transform:rotateY(9deg) rotateX(-3deg);}}
+.c3.act .c3-sway{animation-play-state:paused;}
+.c3-in{display:block;position:relative;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(0);transition:transform .55s cubic-bezier(.2,.8,.2,1);}
+.c3.act .c3-in{transition:transform .12s linear;}
+.c3.press .c3-in{transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(-18px) scale(.97);}
+.c3-face{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;aspect-ratio:1/1.08;padding:16px 12px 18px;border-radius:24px;transform-style:preserve-3d;overflow:visible;
+  background:radial-gradient(120% 90% at 20% 0%,color-mix(in srgb,var(--c) 55%,#fff) 0%,transparent 55%),linear-gradient(160deg,color-mix(in srgb,var(--c) 92%,#fff) 0%,var(--c) 48%,color-mix(in srgb,var(--c) 70%,#000) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -10px 24px rgba(0,0,0,.18),0 7px 0 color-mix(in srgb,var(--c) 60%,#000),0 9px 2px rgba(0,0,0,.12);}
+.c3-ring{position:absolute;left:50%;top:15%;width:74%;aspect-ratio:1;border-radius:50%;transform:translateX(-50%) translateZ(8px);border:2px dashed rgba(255,255,255,.28);animation:c3spin 22s linear infinite;}
+@keyframes c3spin{to{transform:translateX(-50%) translateZ(8px) rotate(360deg);}}
+.c3-ic{position:absolute;left:50%;top:21%;width:46%;aspect-ratio:1;margin-left:-23%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0%,#f1f4f9 60%,#dde4ee 100%);display:flex;align-items:center;justify-content:center;
+  transform:translateZ(46px);box-shadow:0 14px 22px rgba(0,0,0,.28),inset 0 -4px 8px rgba(0,0,0,.08);animation:c3float 3.6s ease-in-out infinite;animation-delay:calc(var(--i) * -.6s);}
+.c3-ic span{font-size:clamp(1.7rem,3.2vw,2.4rem);line-height:1;filter:drop-shadow(0 3px 3px rgba(0,0,0,.2));}
+@keyframes c3float{0%,100%{transform:translateZ(46px) translateY(0);}50%{transform:translateZ(58px) translateY(-6px);}}
+.c3-face b{position:relative;font-family:var(--display);font-weight:800;font-size:clamp(.95rem,1.5vw,1.15rem);line-height:1.1;text-align:center;transform:translateZ(30px);text-shadow:0 2px 6px rgba(0,0,0,.25);overflow-wrap:anywhere;}
+.c3-n{position:relative;font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.2);backdrop-filter:blur(4px);transform:translateZ(22px);}
+.c3-p{position:absolute;top:10px;right:-8px;background:var(--yellow);color:#3d2b00;font-size:.7rem;font-weight:800;padding:3px 8px;border-radius:7px;transform:translateZ(60px) rotate(8deg);box-shadow:0 6px 12px rgba(0,0,0,.22);}
+.c3-glare{position:absolute;inset:0;border-radius:24px;pointer-events:none;transform:translateZ(1px);opacity:0;transition:opacity .3s;
+  background:radial-gradient(circle at var(--gx,50%) var(--gy,30%),rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 55%);mix-blend-mode:soft-light;}
+.c3.act .c3-glare{opacity:1;}
+.c3-shadow{position:absolute;left:12%;right:12%;bottom:-20px;height:26px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(ellipse at center,color-mix(in srgb,var(--c) 45%,rgba(10,20,40,.55)) 0%,transparent 70%);filter:blur(5px);
+  transform:translate(var(--sx,0px),var(--sy,0px));transition:transform .55s cubic-bezier(.2,.8,.2,1),opacity .3s;animation:c3shadow 7s ease-in-out infinite;animation-delay:calc(var(--i) * -1.15s);}
+@keyframes c3shadow{0%,100%{margin-left:10px;opacity:.85;}50%{margin-left:-10px;opacity:.85;}}
+.c3.act .c3-shadow{animation-play-state:paused;transition:transform .12s linear;}
+.c3:focus-visible .c3-face{outline:3px solid var(--orange);outline-offset:4px;}
+@media (max-width:640px){
+  .cats3{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-bottom:22px;}
+  .c3-face{border-radius:18px;padding:8px 5px 10px;aspect-ratio:1/1.3;gap:3px;}
+  .c3-face b{font-size:.8rem;}
+  .c3-ic{width:52%;margin-left:-26%;top:9%;}
+  .c3-ring{top:5%;width:70%;}
+  .c3-glare{border-radius:18px;}
+  .c3-n{font-size:.68rem;padding:2px 7px;}
+  .c3-p{font-size:.6rem;right:-4px;}
+  .c3-ic{transform:translateZ(34px);}
+  @keyframes c3float{0%,100%{transform:translateZ(34px) translateY(0);}50%{transform:translateZ(42px) translateY(-4px);}}
+}
+@media (prefers-reduced-motion:reduce){.c3,.c3-sway,.c3-ic,.c3-ring,.c3-shadow{animation:none !important;}}
+
 /* ── Pied de page ── */
 footer{background:var(--navy);color:#c9d7ec;margin-top:auto;}
 .f-top{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:clamp(20px,3vw,40px);padding-top:clamp(30px,4vw,48px);padding-bottom:clamp(30px,4vw,48px);}
@@ -520,8 +567,8 @@ var URL_DOC = BASE + 'catalogue?key=' + CFG.apiKey;
 var URL_IMG = function(k){ return BASE + 'img_' + k + '?key=' + CFG.apiKey; };
 var CACHE = 'covo_site_cache', IMG_CACHE = 'covo-site-img-v1';
 var S = { data: null, updatedAt: 0, sig: '', imgs: {}, chunks: {}, q: '', view: [], cur: -1, vIdx: 0, vTimer: null, colors: {} };
-var PALETTE = ['#1c55a0','#e8822e','#12805c','#b4410f','#6d3fc4','#0e7490','#c2185b','#8a6d00','#2f6f1f','#a21caf','#334f86','#c0392b'];
-var EMOJI = [[/poisson|crevette|thon|saumon/i,'🐟'],[/viande|boucherie|volaille|poulet/i,'🥩'],[/fruit/i,'🍎'],[/l[ée]gume|primeur/i,'🥕'],[/pain|boulang|p[aâ]tisser/i,'🥖'],[/fromage|laiti|yaourt|lait/i,'🧀'],[/surgel|glace/i,'🧊'],[/bonbon|confiserie|chocolat|biscuit|snack|chips/i,'🍫'],[/hygi[eè]ne|beaut[ée]|cosm[ée]t|soin|cheveu/i,'🧴'],[/vin|alcool|bi[eè]re|rhum|whisky/i,'🍷'],[/boisson|jus|soda|\beaux?\b|sirop/i,'🥤'],[/caf[ée]|th[ée]/i,'☕'],[/riz|p[aâ]tes|c[ée]r[ée]ale|farine|semoule/i,'🍚'],[/conserve|[ée]picerie|sauce|huile|[ée]pice/i,'🥫'],[/entretien|m[ée]nage|lessive/i,'🧽'],[/b[ée]b[ée]/i,'🍼'],[/animal|chien|chat/i,'🐾']];
+var PALETTE = ['#e8822e','#1c55a0','#12805c','#c2185b','#6d3fc4','#0e7490','#b4410f','#2f6f1f','#a21caf','#334f86','#c0392b','#8a6d00'];
+var EMOJI = [[/alimentaire|aliment/i,'🍲'],[/g[ée]n[ée]ral|divers|bazar/i,'🛍️'],[/poisson|crevette|thon|saumon/i,'🐟'],[/viande|boucherie|volaille|poulet/i,'🥩'],[/fruit/i,'🍎'],[/l[ée]gume|primeur/i,'🥕'],[/pain|boulang|p[aâ]tisser/i,'🥖'],[/fromage|laiti|yaourt|lait/i,'🧀'],[/surgel|glace/i,'🧊'],[/bonbon|confiserie|chocolat|biscuit|snack|chips/i,'🍫'],[/hygi[eè]ne|beaut[ée]|cosm[ée]t|soin|cheveu/i,'🧴'],[/vin|alcool|bi[eè]re|rhum|whisky/i,'🍷'],[/boisson|jus|soda|\beaux?\b|sirop/i,'🥤'],[/caf[ée]|th[ée]/i,'☕'],[/riz|p[aâ]tes|c[ée]r[ée]ale|farine|semoule/i,'🍚'],[/conserve|[ée]picerie|sauce|huile|[ée]pice/i,'🥫'],[/entretien|m[ée]nage|lessive/i,'🧽'],[/b[ée]b[ée]/i,'🍼'],[/animal|chien|chat/i,'🐾']];
 function emo(c){ c=String(c||''); for (var i=0;i<EMOJI.length;i++) if (EMOJI[i][0].test(c)) return EMOJI[i][1]; return '🛒'; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 function eur(v){ return (+v||0).toFixed(2).replace('.',','); }
@@ -897,8 +944,18 @@ function viewHome(){
     + '<a class="tile new" href="' + (nw.length ? '#/nouveautes' : '#/tous') + '"><span class="ic">✨</span><span><b>Nouvel arrivage</b><span>' + (nw.length ? plural(nw.length, 'nouveauté') + ' en rayon' : 'Bientôt de nouveaux articles') + '</span></span><span class="go">›</span></a>'
     + '<a class="tile all" href="#/tous"><span class="ic">🛒</span><span><b>Tous les articles</b><span>' + plural(list.length, 'article') + ' dans ' + plural(cs.length, 'rayon') + '</span></span><span class="go">›</span></a>'
     + '</div></section>';
-  h += '<section class="block">' + secT('Nos rayons', null) + '<div class="cats">'
-    + cs.map(function(c){ var n = byCat(c).length; return '<a class="cat" href="#/rayon/' + enc(c) + '"><span class="ic">' + emo(c) + '</span><b>' + esc(c) + '</b><span>' + plural(n, 'article') + '</span></a>'; }).join('')
+  h += '<section class="block">' + secT('Nos rayons', null) + '<div class="cats3">'
+    + cs.map(function(c, i){
+        var n = byCat(c).length, np = byCat(c).filter(function(p){ return p.available && p.oldPrice; }).length;
+        return '<a class="c3" href="#/rayon/' + enc(c) + '" style="--c:' + colorOf(c) + ';--i:' + i + '">'
+          + '<span class="c3-sway"><span class="c3-in"><span class="c3-face">'
+          + '<span class="c3-ring" aria-hidden="true"></span>'
+          + '<span class="c3-ic" aria-hidden="true"><span>' + emo(c) + '</span></span>'
+          + '<b>' + esc(c) + '</b><span class="c3-n">' + plural(n, 'article') + '</span>'
+          + (np ? '<span class="c3-p">-' + np + ' promo' + (np > 1 ? 's' : '') + '</span>' : '')
+          + '<span class="c3-glare" aria-hidden="true"></span>'
+          + '</span></span></span><span class="c3-shadow" aria-hidden="true"></span></a>';
+      }).join('')
     + '</div></section>';
   if (pr.length) h += '<section class="block">' + secT('🔥 Promotions', pr.length, '#/promotions') + rowHTML('row-promo', pr.slice(0, 18)) + '</section>';
   if (nw.length) h += '<section class="block">' + secT('✨ Nouvel arrivage', nw.length, '#/nouveautes') + rowHTML('row-new', nw.slice(0, 18)) + '</section>';
@@ -907,7 +964,39 @@ function viewHome(){
     h += '<section class="block">' + secT(emo(c) + ' ' + esc(c), items.length, '#/rayon/' + enc(c), 'Tout le rayon') + rowHTML('row-c' + i, items.slice(0, 18)) + '</section>';
   });
   document.getElementById('view').innerHTML = h;
+  cats3Bind();
   if (pr.length) { if (S.feat >= Math.min(pr.length, 6)) S.feat = 0; drawFeat(false); startFeat(); }
+}
+/* Tuiles de rayons en 3D : la tuile s'incline vers le doigt ou la souris, le reflet et l'ombre suivent */
+function cats3Bind(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  Array.prototype.forEach.call(document.querySelectorAll('.c3'), function(el){
+    var inn = el.querySelector('.c3-in'), raf = 0;
+    function tilt(e){
+      var r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      x = Math.max(0, Math.min(1, x)); y = Math.max(0, Math.min(1, y));
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(function(){
+        el.classList.add('act');
+        inn.style.setProperty('--rx', ((0.5 - y) * 26).toFixed(2) + 'deg');
+        inn.style.setProperty('--ry', ((x - 0.5) * 30).toFixed(2) + 'deg');
+        el.style.setProperty('--gx', (x * 100).toFixed(1) + '%');
+        el.style.setProperty('--gy', (y * 100).toFixed(1) + '%');
+        el.style.setProperty('--sx', ((0.5 - x) * 26).toFixed(1) + 'px');
+        el.style.setProperty('--sy', ((0.5 - y) * 10).toFixed(1) + 'px');
+      });
+    }
+    function reset(){
+      cancelAnimationFrame(raf); el.classList.remove('act', 'press');
+      inn.style.removeProperty('--rx'); inn.style.removeProperty('--ry');
+      el.style.removeProperty('--sx'); el.style.removeProperty('--sy');
+    }
+    el.addEventListener('pointermove', tilt);
+    el.addEventListener('pointerdown', function(e){ tilt(e); el.classList.add('press'); });
+    el.addEventListener('pointerup', function(){ el.classList.remove('press'); });
+    el.addEventListener('pointerleave', reset);
+    el.addEventListener('pointercancel', reset);
+  });
 }
 function drawFeat(anim){
   var el = document.getElementById('feat'); if (!el) return;
@@ -1036,6 +1125,7 @@ document.addEventListener('keydown', function(e){
 /* ── Rendu général (à chaque mise à jour des données) ── */
 function paint(){
   var d = S.data || {}, list = all(), shop = d.shop || {};
+  S.colors = {}; cats().forEach(function(c, i){ S.colors[c] = PALETTE[i % PALETTE.length]; });
   var name = shop.name || 'COVO';
   document.getElementById('shop-name').textContent = name;
   document.getElementById('ft-name').textContent = name;
