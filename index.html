@@ -168,13 +168,20 @@ select{height:42px;padding:0 12px;border-radius:10px;border:1.5px solid var(--li
 .ov{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:clamp(0px,3vw,40px);background:rgba(6,16,32,.62);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);}
 .ov.open{display:flex;animation:fade .2s ease;}
 @keyframes fade{from{opacity:0;}}
-.pane{position:relative;width:min(1080px,100%);max-height:min(760px,100%);display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);background:var(--surface);border-radius:24px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.45);animation:pop .3s cubic-bezier(.2,.9,.25,1);}
+.pane{position:relative;width:min(1080px,100%);height:min(760px,100%);display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr);background:var(--surface);border-radius:24px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.45);animation:pop .3s cubic-bezier(.2,.9,.25,1);}
 @keyframes pop{from{opacity:0;transform:scale(.96);}}
 .pane .pic{background:#fff;display:flex;align-items:center;justify-content:center;padding:clamp(18px,3vw,44px);min-height:0;position:relative;}
-.pane .pic img{width:100%;height:100%;max-height:640px;object-fit:contain;}
+.pane .pic .frame{width:100%;height:100%;max-width:560px;max-height:560px;display:flex;align-items:center;justify-content:center;}
+.pane .pic .frame img{width:100%;height:100%;object-fit:contain;}
+.pane .pic .frame .ph,.pane .pic .frame .wait{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
 .pane .pic .ph{font-size:7rem;}
 .pane .pic .tag-big{position:absolute;left:24px;bottom:24px;}
-.pane .det{display:flex;flex-direction:column;gap:14px;padding:clamp(22px,3vw,40px);overflow-y:auto;min-height:0;}
+.pane .det{display:flex;flex-direction:column;gap:14px;padding:clamp(22px,3vw,40px);overflow-y:auto;min-height:0;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;}
+.pane .det>*{flex-shrink:0;}
+.pane .more{position:sticky;bottom:-1px;margin:-14px calc(-1 * clamp(22px,3vw,40px)) calc(-1 * clamp(22px,3vw,40px));padding:26px 0 12px;text-align:center;background:linear-gradient(transparent,var(--surface) 60%);pointer-events:none;transition:opacity .2s;}
+.pane .more span{pointer-events:auto;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;background:var(--covo);color:#fff;font-size:.82rem;font-weight:800;box-shadow:0 6px 16px rgba(13,45,92,.3);cursor:pointer;}
+.pane .more.hide{opacity:0;}
+.pane .more.hide span{pointer-events:none;}
 .chip-r{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:var(--c);color:#fff;font-weight:700;font-size:.88rem;border:none;}
 .pane h3{font-size:clamp(1.5rem,2.6vw,2.2rem);font-weight:900;line-height:1.08;font-variation-settings:"wdth" 108;padding-right:44px;overflow-wrap:anywhere;}
 .pane .brand2{font-size:1rem;color:var(--ink-2);font-weight:600;margin-top:-6px;}
@@ -226,12 +233,49 @@ select{height:42px;padding:0 12px;border-radius:10px;border:1.5px solid var(--li
 .src{font-size:.8rem;color:var(--ink-2);}
 .src a{color:var(--covo);font-weight:700;}
 
+/* ── Fiche produit : sections dépliables, identiques pour chaque article ── */
+.secs-h{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:16px;}
+.secs-h span{font-size:1.1rem;font-weight:900;font-variation-settings:"wdth" 108;}
+.secs-h button{border:1.5px solid var(--line);background:transparent;color:var(--covo);font:inherit;font-size:.84rem;font-weight:800;padding:6px 12px;border-radius:99px;}
+@media (prefers-color-scheme:dark){.secs-h button{color:#8fb8ef;}}
+.secs{display:flex;flex-direction:column;gap:8px;}
+.sec{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden;}
+.sec[open]{border-color:color-mix(in srgb,var(--c,var(--covo)) 45%,var(--line));}
+.sec summary{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;list-style:none;}
+.sec summary::-webkit-details-marker{display:none;}
+.sec summary:focus-visible{outline:3px solid var(--tag);outline-offset:-3px;border-radius:14px;}
+.sec .ic{width:38px;height:38px;border-radius:10px;background:var(--page);display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;}
+.sec .st{flex:1;min-width:0;}
+.sec .st b{display:block;font-weight:800;font-size:.98rem;}
+.sec .st small{display:block;font-size:.82rem;color:var(--ink-2);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sec .st small.na{font-style:italic;font-weight:500;}
+.sec .chev{width:10px;height:10px;border-right:2.5px solid var(--ink-2);border-bottom:2.5px solid var(--ink-2);transform:rotate(45deg);margin:0 6px 4px 0;transition:transform .2s;flex-shrink:0;}
+.sec[open] .chev{transform:rotate(-135deg);margin:4px 6px 0 0;}
+.sec-b{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;font-size:.95rem;line-height:1.6;}
+.sec-b p{color:var(--ink-2);max-width:68ch;}
+.sec-b p strong{color:var(--ink);}
+.sec-b .na{color:var(--ink-2);font-style:italic;}
+.sec-b table{width:100%;border-collapse:collapse;font-size:.92rem;}
+.sec-b td{padding:7px 0;border-top:1px solid var(--line);}
+.sec-b td:last-child{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;}
+.sec-b tr.sub td:first-child{padding-left:14px;color:var(--ink-2);}
+.sec-b dl.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+.sec-b dl.kv div{padding:9px 12px;border-radius:12px;background:var(--page);}
+.sec-b dl.kv dt{font-size:.78rem;color:var(--ink-2);font-weight:600;}
+.sec-b dl.kv dd{font-weight:800;font-size:.93rem;margin-top:2px;overflow-wrap:anywhere;}
+.sec-b .line{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--line) 25%,var(--page) 50%,var(--line) 75%);background-size:200% 100%;animation:shim 1.2s linear infinite;}
+.sec-b .line.s{width:60%;}
+
 /* ── Pied de page ── */
 footer{background:var(--covo-deep);color:#d4e2f5;padding:32px var(--pad) calc(32px + env(safe-area-inset-bottom));}
 .f-in{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;}
 footer h4{color:#fff;font-size:1.05rem;font-weight:800;margin-bottom:8px;}
 footer p{font-size:.95rem;line-height:1.7;}
 footer a{color:#ffb672;font-weight:700;text-decoration:none;}
+.qr-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.qr-acts button{border:1.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:.88rem;font-weight:800;padding:9px 13px;border-radius:10px;cursor:pointer;}
+.qr-acts button:hover{background:rgba(255,255,255,.18);}
+.qr-acts button:focus-visible{outline:3px solid var(--tag);outline-offset:2px;}
 .fab{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));z-index:70;width:60px;height:60px;border-radius:50%;background:#1fa855;color:#fff;display:none;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(31,168,85,.45);}
 .fab svg{width:31px;height:31px;}
 .toast{position:fixed;left:50%;top:86px;transform:translate(-50%,-16px);z-index:120;padding:11px 18px;border-radius:12px;background:var(--covo-deep);color:#fff;font-weight:700;opacity:0;pointer-events:none;transition:opacity .3s,transform .35s;}
@@ -252,10 +296,11 @@ footer a{color:#ffb672;font-weight:700;text-decoration:none;}
   .v-pic .tile{width:min(64%,300px);}
   .v-txt{padding-bottom:54px;}
   .v-arrows{display:none;}
-  .pane{grid-template-columns:1fr;max-height:100%;height:100%;border-radius:0;}
+  .pane{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);height:100%;border-radius:0;}
   .ov{padding:0;}
-  .pane .pic{height:44vh;flex-shrink:0;}
+  .pane .pic{height:38vh;height:38dvh;}
   .pane .nav.r{left:auto;right:12px;}
+  .pane .nav{top:19vh;top:19dvh;}
   .pane .x{background:rgba(255,255,255,.95);color:#0e1a2b;}
 }
 @media (max-width:640px){
@@ -278,7 +323,7 @@ footer a{color:#ffb672;font-weight:700;text-decoration:none;}
 @media (orientation:landscape) and (max-height:520px){
   .top{position:relative;} .aisles-m{top:0;} .side{top:0;height:100dvh;}
   .vitrine{min-height:0;grid-template-columns:1.3fr 1fr;} .v-pic{order:0;padding:14px;} .v-pic .tile{width:min(100%,170px);} .v-txt{padding:16px 18px 40px;gap:8px;} .v-name{font-size:1.5rem;} .v-meta{display:none;} .btn{height:40px;padding:0 14px;font-size:.9rem;} .tag-big .tag .p{font-size:2.2rem;} .top-in{min-height:58px;padding-top:6px;padding-bottom:6px;} .brand img{width:38px;height:38px;}
-  .pane{grid-template-columns:1fr 1fr;} .pane .pic{height:auto;}
+  .pane{grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);} .pane .pic{height:auto;}
   .pane .nav.r{left:calc(50% - 58px);right:auto;}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;scroll-behavior:auto !important;}}
@@ -331,6 +376,7 @@ footer a{color:#ffb672;font-weight:700;text-decoration:none;}
   <div class="f-in">
     <div><h4 id="ft-name">COVO</h4><p>Ce catalogue est mis à jour en direct depuis la caisse du magasin : prix, promotions et disponibilité changent au fil des ventes.</p></div>
     <div><h4>Nous trouver</h4><p id="ft-contact">Rendez-vous en magasin.</p></div>
+    <div><h4>Partager le catalogue</h4><p>Imprimez le QR code du site pour l'afficher en magasin ou le donner à vos clients.</p><div class="qr-acts"><button type="button" onclick="sitePrintQr('a4')">🖨️ Affiche A4</button><button type="button" onclick="sitePrintQr('a6')">🖨️ 4 cartes A6</button></div></div>
     <div><h4>Votre fidélité</h4><p>Suivez vos points et réservez vos articles depuis votre <a href="http://fidelite.covo-trv.fr/" target="_blank" rel="noopener">espace fidélité</a>.</p></div>
   </div>
 </footer>
@@ -342,6 +388,111 @@ footer a{color:#ffb672;font-weight:700;text-decoration:none;}
 <script>
 /* ═══ CATALOGUE COVO — lecture publique de Firestore (site/catalogue + site/img_N),
    alimenté automatiquement par COVO Pro. Vérifie les changements toutes les 45 s. ═══ */
+/* ═══ QR CODE DU SITE CATALOGUE — affiche A4 et cartes A6 à imprimer ═══ */
+function covoQrMake(text, size) {
+    return new Promise(function (resolve, reject) {
+        if (typeof QRCode === 'undefined') { reject(new Error('Générateur de QR code non chargé')); return; }
+        var box = document.createElement('div');
+        box.style.cssText = 'position:fixed;left:-9999px;top:0;';
+        document.body.appendChild(box);
+        try {
+            new QRCode(box, { text: text, width: size, height: size, colorDark: '#0d2d5c', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+            var c = box.querySelector('canvas');
+            var url = c ? c.toDataURL('image/png') : ((box.querySelector('img') || {}).src || '');
+            document.body.removeChild(box);
+            if (!url) reject(new Error('QR code impossible à générer')); else resolve(url);
+        } catch (e) { try { document.body.removeChild(box); } catch (x) {} reject(e); }
+    });
+}
+function covoQrEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function covoQrWa(w) { w = String(w || '').replace(/\D/g, ''); if (!w) return ''; if (w.indexOf('33') === 0 && w.length === 11) return '0' + w.slice(2).replace(/(\d)(?=(\d{2})+$)/g, '$1 '); return '+' + w; }
+/* o = { url, name, logo, address, phone, whatsapp, qr (data URL), format: 'a4' | 'a6' } */
+function covoQrPosterHtml(o) {
+    var e = covoQrEsc, name = o.name || 'COVO', shortUrl = String(o.url || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+    var contact = [];
+    if (o.address) contact.push('📍 ' + e(o.address));
+    if (o.phone) contact.push('📞 ' + e(o.phone));
+    if (o.whatsapp) contact.push('💬 WhatsApp ' + e(covoQrWa(o.whatsapp)));
+    var logo = o.logo ? '<img class="lg" src="' + e(o.logo) + '" alt="">' : '';
+    var qr = '<div class="qr"><img src="' + o.qr + '" alt="QR code du catalogue">' + (o.logo ? '<span class="mid"><img src="' + e(o.logo) + '" alt=""></span>' : '') + '</div>';
+    var css = '@page{size:A4 portrait;margin:0;}*{box-sizing:border-box;margin:0;padding:0;}'
+        + 'html,body{background:#fff;font-family:"Archivo","Arial",sans-serif;color:#0d2d5c;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+        + '.qr{position:relative;background:#fff;border-radius:6mm;border:2.4mm solid #e8822e;padding:5mm;display:inline-block;line-height:0;}'
+        + '.qr>img{display:block;width:100%;height:auto;image-rendering:pixelated;}'
+        + '.mid{position:absolute;left:50%;top:50%;width:19%;aspect-ratio:1;transform:translate(-50%,-50%);background:#fff;border-radius:22%;padding:3%;display:flex;}'
+        + '.mid img{width:100%;height:100%;object-fit:contain;border-radius:18%;}'
+        + '.url{font-weight:800;letter-spacing:.01em;word-break:break-all;}'
+        /* Affiche A4 */
+        + '.a4{width:210mm;height:297mm;display:flex;flex-direction:column;overflow:hidden;}'
+        + '.a4 .hd{background:linear-gradient(135deg,#0d2d5c,#1c55a0 70%);color:#fff;padding:16mm 16mm 22mm;display:flex;align-items:center;gap:7mm;}'
+        + '.a4 .lg{width:30mm;height:30mm;object-fit:contain;background:#fff;border-radius:7mm;padding:2mm;}'
+        + '.a4 .nm{font-size:15mm;font-weight:900;line-height:1;font-stretch:112%;}'
+        + '.a4 .sub{font-size:5.4mm;opacity:.85;margin-top:2.5mm;font-weight:600;}'
+        + '.a4 .bd{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 16mm;margin-top:-12mm;}'
+        + '.a4 h1{background:#ffd23f;color:#0d2d5c;font-size:11mm;font-weight:900;line-height:1.05;padding:4mm 8mm;border-radius:4mm;transform:rotate(-1.5deg);box-shadow:0 2mm 0 #e8822e;}'
+        + '.a4 .lead{font-size:5.6mm;font-weight:600;margin:8mm 0 7mm;color:#33507a;max-width:150mm;line-height:1.35;}'
+        + '.a4 .qr{width:118mm;}'
+        + '.a4 .how{display:flex;gap:6mm;margin-top:9mm;font-size:4.6mm;font-weight:700;}'
+        + '.a4 .how div{display:flex;align-items:center;gap:2.5mm;}'
+        + '.a4 .how b{width:9mm;height:9mm;border-radius:50%;background:#1c55a0;color:#fff;display:flex;align-items:center;justify-content:center;font-size:4.6mm;}'
+        + '.a4 .url{margin-top:7mm;font-size:5.4mm;color:#1c55a0;}'
+        + '.a4 .ft{background:#0d2d5c;color:#d4e2f5;padding:7mm 16mm;font-size:4.4mm;font-weight:600;display:flex;flex-wrap:wrap;gap:3mm 9mm;justify-content:center;}'
+        /* Cartes A6 (4 par page) */
+        + '.sheet{width:210mm;height:297mm;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;}'
+        + '.card{border:.3mm dashed #b8c6da;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7mm;gap:3.5mm;}'
+        + '.card .top{display:flex;align-items:center;gap:3mm;}'
+        + '.card .lg{width:13mm;height:13mm;object-fit:contain;}'
+        + '.card .nm{font-size:7mm;font-weight:900;}'
+        + '.card h1{background:#ffd23f;font-size:5.2mm;font-weight:900;padding:1.6mm 4mm;border-radius:2mm;}'
+        + '.card .qr{width:62mm;border-width:1.4mm;padding:3mm;border-radius:4mm;}'
+        + '.card .t{font-size:3.6mm;font-weight:700;color:#33507a;}'
+        + '.card .url{font-size:3.2mm;color:#1c55a0;}'
+        + '@media screen{body{background:#dfe6f0;padding:10mm 0;}.a4,.sheet{margin:0 auto;background:#fff;box-shadow:0 4mm 14mm rgba(0,0,0,.18);}}';
+    var body;
+    if (o.format === 'a6') {
+        var one = '<div class="card"><div class="top">' + logo + '<div class="nm">' + e(name) + '</div></div>'
+            + '<h1>Notre catalogue en ligne</h1>' + qr
+            + '<div class="t">Scannez avec l\'appareil photo de votre téléphone</div><div class="url">' + e(shortUrl) + '</div></div>';
+        body = '<div class="sheet">' + one + one + one + one + '</div>';
+    } else {
+        body = '<div class="a4"><div class="hd">' + logo + '<div><div class="nm">' + e(name) + '</div><div class="sub">Votre magasin, aussi sur votre téléphone</div></div></div>'
+            + '<div class="bd"><h1>Notre catalogue en ligne</h1>'
+            + '<p class="lead">Prix, promotions, nouveaux arrivages et disponibilité des articles, mis à jour en direct depuis la caisse.</p>'
+            + qr
+            + '<div class="how"><div><b>1</b>Ouvrez l\'appareil photo</div><div><b>2</b>Visez le code</div><div><b>3</b>Touchez le lien</div></div>'
+            + '<div class="url">' + e(shortUrl) + '</div></div>'
+            + (contact.length ? '<div class="ft">' + contact.map(function (c) { return '<span>' + c + '</span>'; }).join('') + '</div>' : '')
+            + '</div>';
+    }
+    return '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>QR code — ' + e(name) + '</title>'
+        + '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap">'
+        + '<style>' + css + '</style></head><body>' + body
+        + '<script>window.onload=function(){setTimeout(function(){window.print();},500);};<\/script></body></html>';
+}
+function covoQrPrint(o) {
+    var win = window.open('', '_blank', 'width=820,height=980');
+    if (!win) { alert('Autorisez les fenêtres pop-up pour imprimer le QR code.'); return Promise.resolve(false); }
+    win.document.write('<p style="font-family:sans-serif;padding:30px">Préparation du QR code…</p>');
+    return covoQrMake(o.url, 1000).then(function (qr) {
+        o.qr = qr;
+        win.document.open(); win.document.write(covoQrPosterHtml(o)); win.document.close();
+        return true;
+    }).catch(function (err) { win.document.body.innerHTML = '<p style="font-family:sans-serif;padding:30px">⚠️ ' + covoQrEsc(err.message || err) + '</p>'; return false; });
+}
+
+/* Impression du QR code depuis le site : l'adresse est celle de la page ouverte */
+function sitePrintQr(fmt){
+  var shop = (S.data && S.data.shop) || {};
+  var url = location.href.split('#')[0].split('?')[0];
+  var logo = (document.querySelector('.brand img') || {}).src || '';
+  var go = function(){ covoQrPrint({ url: url, name: shop.name || 'COVO', address: shop.address, phone: shop.phone, whatsapp: shop.whatsapp, logo: logo, format: fmt }); };
+  if (typeof QRCode !== 'undefined') { go(); return; }
+  var sc = document.createElement('script');
+  sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  sc.onload = go; sc.onerror = function(){ alert('Impossible de charger le générateur de QR code. Vérifiez la connexion.'); };
+  document.head.appendChild(sc);
+}
+
 var CFG = { apiKey: "AIzaSyDEe-tOWDvav7v5Rua7JYcSHZ2dfFxM0fY", projectId: "covo-pro-fidelite", poll: 45000, newDays: 14, fid: "http://fidelite.covo-trv.fr/" };
 var BASE = 'https://firestore.googleapis.com/v1/projects/' + CFG.projectId + '/databases/(default)/documents/site/';
 var URL_DOC = BASE + 'catalogue?key=' + CFG.apiKey;
@@ -580,30 +731,38 @@ function openItem(id){
   pane.innerHTML = '<button class="x" onclick="closeItem()" aria-label="Fermer">✕</button>'
     + (S.cur > 0 ? '<button class="nav l" onclick="stepItem(-1)" aria-label="Article précédent">‹</button>' : '')
     + (S.cur >= 0 && S.cur < S.view.length - 1 ? '<button class="nav r" onclick="stepItem(1)" aria-label="Article suivant">›</button>' : '')
-    + '<div class="pic">' + imgHTML(p).replace(' loading="lazy"', '') + tagHTML(p, true) + '</div>'
+    + '<div class="pic"><div class="frame">' + imgHTML(p).replace(' loading="lazy"', '') + '</div>' + tagHTML(p, true) + '</div>'
     + '<div class="det">'
     + '<button class="chip-r" onclick="closeItem();jump(this.dataset.c)" data-c="' + esc(p.category) + '">' + emo(p.category) + ' Rayon ' + esc(p.category) + '</button>'
     + '<h3>' + esc(p.name) + '</h3>' + (p.brand ? '<div class="brand2">' + esc(p.brand) + '</div>' : '')
     + '<dl class="facts">' + facts + '</dl>'
-    + (p.desc ? '<p class="desc">' + esc(p.desc) + '</p>' : '')
-    + '<div id="off-box">' + (validEan(p.barcode) ? offSkeleton() : '') + '</div>'
+    + secsHTML(p)
     + (S.cur >= 0 ? '<div class="pos">Article ' + (S.cur + 1) + ' sur ' + S.view.length + '</div>' : '')
     + '<div class="acts">'
     + '<a class="btn sec" href="' + CFG.fid + '" target="_blank" rel="noopener">🎁 Réserver dans mon espace fidélité</a>'
-    + '</div></div>';
+    + '</div><div class="more hide"><span onclick="moreScroll()">Plus d\'informations ↓</span></div></div>';
   var ov = document.getElementById('ov');
   if (!ov.classList.contains('open')) { ov.classList.add('open'); document.body.style.overflow = 'hidden'; S.lastFocus = document.activeElement; }
   pane.querySelector('.x').focus({ preventScroll: true });
-  if (validEan(p.barcode)) offLoad(p);
+  secsBind(); if (validEan(p.barcode)) offLoad(p); else secsNoData(p);
+  var det = pane.querySelector('.det'); det.scrollTop = 0; det.onscroll = moreCheck; moreCheck(); setTimeout(moreCheck, 400);
   try { history.replaceState(null, '', '#article-' + p.id); } catch(e) {}
 }
+
+/* Pastille « Plus d'informations » : visible tant qu'il reste du contenu à lire dans la fiche */
+function moreCheck(){
+  var det = document.querySelector('#pane .det'), m = det && det.querySelector('.more');
+  if (!m) return;
+  m.classList.toggle('hide', det.scrollHeight - det.clientHeight - det.scrollTop < 40);
+}
+function moreScroll(){ var det = document.querySelector('#pane .det'); if (det) det.scrollBy({ top: det.clientHeight * 0.75, behavior: 'smooth' }); }
 
 /* ═══ FICHE DÉTAILLÉE — Open Food Facts (base publique et libre des produits alimentaires),
    interrogée avec le code-barres de l'article : classement (Nutri-Score, transformation NOVA,
    Éco-score), ingrédients, allergènes, valeurs nutritionnelles. Affichée seulement si
    l'article y est référencé. Résultats gardés 7 jours sur l'appareil. ═══ */
-var OFF_FIELDS = 'product_name,product_name_fr,generic_name_fr,brands,quantity,categories_tags_fr,categories,ingredients_text_fr,ingredients_text,allergens_tags,traces_tags,nutriscore_grade,nova_group,ecoscore_grade,labels_tags,origins,origins_fr,manufacturing_places,nutriments,conservation_conditions_fr,serving_size';
-var OFF_KEY = 'covo_off_';
+var OFF_FIELDS = 'product_name,product_name_fr,generic_name_fr,brands,quantity,categories_tags_fr,categories,ingredients_text_fr,ingredients_text,allergens_tags,traces_tags,nutriscore_grade,nova_group,ecoscore_grade,labels_tags,origins,origins_fr,manufacturing_places,nutriments,conservation_conditions_fr,serving_size,preparation_fr,preparation,warning_fr,packaging_text_fr,customer_service_fr';
+var OFF_KEY = 'covo_off2_';
 function validEan(b){ return /^\d{8}$|^\d{12,14}$/.test(String(b || '').trim()); }
 function offSkeleton(){ return '<section class="off"><div class="off-h">Informations sur le produit</div><div class="sk" style="aspect-ratio:auto;height:120px;"></div></section>'; }
 function offGet(code){
@@ -644,35 +803,128 @@ function offNutri(n){
     + rows.map(function(r){ var v = +r[1]; return '<tr' + (/^dont/.test(r[0]) ? ' class="sub"' : '') + '><td>' + r[0] + '</td><td>' + (Math.round(v * 10) / 10).toString().replace('.', ',') + ' ' + r[2] + '</td></tr>'; }).join('')
     + '</table></details>';
 }
+/* ═══ SECTIONS DE LA FICHE — toujours les mêmes, dans le même ordre, pour chaque article.
+   Fermées, elles affichent un résumé (vue d'ensemble) ; on les déplie pour lire le détail.
+   Les sections ouvertes restent ouvertes en passant d'un article à l'autre. ═══ */
+var SECS = [
+  ['info',  '📋', 'Description'],
+  ['rank',  '🏷️', 'Classement'],
+  ['ingr',  '🥣', 'Ingrédients et allergènes'],
+  ['nutri', '📊', 'Valeurs nutritionnelles'],
+  ['use',   '🧊', 'Conservation et conseils']
+];
+var SEC_KEY = 'covo_site_secs';
+function secsOpenSet(){ try { var a = JSON.parse(localStorage.getItem(SEC_KEY) || 'null'); if (Array.isArray(a)) return a; } catch(e) {} return ['info']; }
+function kv(rows){ rows = rows.filter(function(r){ return r[1]; }); return rows.length ? '<dl class="kv">' + rows.map(function(r){ return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' : ''; }
+function secsHTML(p){
+  var open = secsOpenSet(), loading = validEan(p.barcode);
+  var skel = '<div class="line"></div><div class="line s"></div>';
+  var h = '<div class="secs-h"><span>Fiche produit</span><button type="button" onclick="secsAll()" id="secs-all">Tout déplier</button></div><div class="secs" id="secs">';
+  SECS.forEach(function(s){
+    var body, sum;
+    if (s[0] === 'info') { body = infoBody(p, null); sum = infoSum(p, null); }
+    else { body = loading ? skel : ''; sum = loading ? 'Chargement…' : ''; }
+    h += '<details class="sec" data-k="' + s[0] + '"' + (open.indexOf(s[0]) >= 0 ? ' open' : '') + '><summary><span class="ic" aria-hidden="true">' + s[1] + '</span><span class="st"><b>' + s[2] + '</b><small>' + esc(sum) + '</small></span><span class="chev" aria-hidden="true"></span></summary><div class="sec-b">' + body + '</div></details>';
+  });
+  return h + '</div><p class="src" id="secs-src"></p>';
+}
+function infoSum(p, o){
+  var a = [];
+  if (p.brand || (o && o.brands)) a.push(p.brand || String(o.brands).split(',')[0]);
+  if (o && o.quantity) a.push(o.quantity);
+  if (p.desc) a.push(p.desc);
+  return a.join(' · ') || 'Rayon ' + p.category;
+}
+function infoBody(p, o){
+  o = o || {};
+  var h = p.desc ? '<p>' + esc(p.desc) + '</p>' : '';
+  h += kv([
+    ['Marque', p.brand || (o.brands ? String(o.brands).split(',')[0] : '')],
+    ['Contenance', o.quantity || ''],
+    ['Rayon', p.category],
+    ['Vendu', p.unit === 'kg' ? 'au kilo' : "à l'unité"],
+    ['Origine', o.origins_fr || o.origins || ''],
+    ['Fabriqué à', o.manufacturing_places || ''],
+    ['Code-barres', validEan(p.barcode) ? String(p.barcode).trim() : '']
+  ]);
+  return h;
+}
+function secSet(k, sum, body){
+  var d = document.querySelector('#secs .sec[data-k="' + k + '"]'); if (!d) return;
+  var sm = d.querySelector('.st small');
+  sm.textContent = sum || 'Non renseigné pour cet article'; sm.classList.toggle('na', !sum);
+  d.querySelector('.sec-b').innerHTML = body || '<p class="na">Information non disponible pour cet article.</p>';
+}
+function secsNoData(p){ ['rank','ingr','nutri','use'].forEach(function(k){ secSet(k, '', ''); }); secsAllLabel(); }
+function secsBind(){
+  Array.prototype.forEach.call(document.querySelectorAll('#secs .sec'), function(d){
+    d.addEventListener('toggle', function(){
+      var open = Array.prototype.filter.call(document.querySelectorAll('#secs .sec'), function(x){ return x.open; }).map(function(x){ return x.dataset.k; });
+      try { localStorage.setItem(SEC_KEY, JSON.stringify(open)); } catch(e) {}
+      secsAllLabel(); moreCheck();
+    });
+  });
+  secsAllLabel();
+}
+function secsAllLabel(){
+  var all = document.querySelectorAll('#secs .sec'), b = document.getElementById('secs-all'); if (!b) return;
+  var openN = Array.prototype.filter.call(all, function(x){ return x.open; }).length;
+  b.textContent = openN === all.length ? 'Tout replier' : 'Tout déplier';
+}
+function secsAll(){
+  var all = document.querySelectorAll('#secs .sec');
+  var anyClosed = Array.prototype.some.call(all, function(x){ return !x.open; });
+  Array.prototype.forEach.call(all, function(x){ x.open = anyClosed; });
+}
+function nutriTable(n){
+  if (!n) return '';
+  var rows = [['Énergie', n['energy-kcal_100g'], 'kcal'], ['Matières grasses', n.fat_100g, 'g'], ['dont acides gras saturés', n['saturated-fat_100g'], 'g'],
+              ['Glucides', n.carbohydrates_100g, 'g'], ['dont sucres', n.sugars_100g, 'g'], ['Fibres', n.fiber_100g, 'g'], ['Protéines', n.proteins_100g, 'g'], ['Sel', n.salt_100g, 'g']]
+    .filter(function(r){ return r[1] != null && r[1] !== ''; });
+  if (!rows.length) return '';
+  return '<table><tr><td><b>Pour 100 g</b></td><td></td></tr>' + rows.map(function(r){ var v = +r[1]; return '<tr' + (/^dont/.test(r[0]) ? ' class="sub"' : '') + '><td>' + r[0] + '</td><td>' + (Math.round(v * 10) / 10).toString().replace('.', ',') + ' ' + r[2] + '</td></tr>'; }).join('') + '</table>';
+}
 function offLoad(p){
   var code = String(p.barcode).trim();
   offGet(code).then(function(o){
-    var box = document.getElementById('off-box');
-    if (!box || S.view[S.cur] && String(S.view[S.cur].id) !== String(p.id) && S.cur >= 0) return;   // fiche déjà changée
-    if (!o) { box.innerHTML = ''; return; }   // article non référencé : rien à afficher
+    if (!document.getElementById('secs') || (S.cur >= 0 && S.view[S.cur] && String(S.view[S.cur].id) !== String(p.id))) return;   // fiche déjà changée
+    if (!o) { secsNoData(p); return; }   // article non référencé
+    // Description complétée
+    secSet('info', infoSum(p, o), infoBody(p, o));
+    // Classement
     var scores = offScore('nutri', o.nutriscore_grade) + offScore('nova', o.nova_group) + offScore('eco', o.ecoscore_grade);
-    var ingr = o.ingredients_text_fr || o.ingredients_text || '';
-    var allerg = (o.allergens_tags || []).map(offAllergen);
-    var traces = (o.traces_tags || []).map(offAllergen);
     var cats = (o.categories || '').split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s && !/^[a-z]{2}:/.test(s); });
     var labels = (o.labels_tags || []).filter(function(l){ return /^fr:|^en:(organic|fair-trade|vegan|vegetarian|gluten-free|halal|no-palm-oil)/.test(l); }).slice(0, 6).map(function(l){ return offCap(offTag(l)); });
-    var facts = [];
-    if (o.quantity) facts.push(['Contenance', o.quantity]);
-    if (cats.length) facts.push(['Classement', cats.slice(-2).join(' › ')]);
-    if (o.origins_fr || o.origins) facts.push(['Origine', o.origins_fr || o.origins]);
-    if (o.manufacturing_places) facts.push(['Fabriqué à', o.manufacturing_places]);
-    if (o.conservation_conditions_fr) facts.push(['Conservation', o.conservation_conditions_fr]);
-    var h = '<section class="off"><div class="off-h">Informations sur le produit</div>';
-    if (scores) h += '<div class="scores">' + scores + '</div>';
-    if (facts.length) h += '<dl class="off-facts">' + facts.map(function(f){ return '<div><dt>' + f[0] + '</dt><dd>' + esc(f[1]) + '</dd></div>'; }).join('') + '</dl>';
-    if (labels.length) h += '<div class="labels">' + labels.map(function(l){ return '<span>' + esc(l) + '</span>'; }).join('') + '</div>';
-    if (ingr) h += '<details class="off-d" open><summary>Ingrédients</summary><p>' + esc(ingr).replace(/_([^_]+)_/g, '<strong>$1</strong>') + '</p></details>';
-    if (allerg.length || traces.length) h += '<div class="allerg">⚠️ ' + (allerg.length ? '<b>Allergènes :</b> ' + esc(allerg.join(', ')) : '') + (traces.length ? (allerg.length ? '<br>' : '') + '<b>Traces possibles :</b> ' + esc(traces.join(', ')) : '') + '</div>';
-    h += offNutri(o.nutriments);
-    h += '<p class="src">Source : <a href="https://fr.openfoodfacts.org/produit/' + code + '" target="_blank" rel="noopener">Open Food Facts</a> · code-barres ' + code + '</p></section>';
-    if (!scores && !facts.length && !ingr && !allerg.length) { box.innerHTML = ''; return; }
-    box.innerHTML = h;
-  }).catch(function(){ var box = document.getElementById('off-box'); if (box) box.innerHTML = ''; });
+    var rs = [];
+    if (o.nutriscore_grade && /^[a-e]$/i.test(o.nutriscore_grade)) rs.push('Nutri-Score ' + o.nutriscore_grade.toUpperCase());
+    if (/^[1-4]$/.test(String(o.nova_group || ''))) rs.push('NOVA ' + o.nova_group);
+    if (o.ecoscore_grade && /^[a-e]$/i.test(o.ecoscore_grade)) rs.push('Éco-score ' + o.ecoscore_grade.toUpperCase());
+    if (!rs.length && cats.length) rs.push(cats.slice(-1)[0]);
+    var rb = (scores ? '<div class="scores">' + scores + '</div>' : '')
+      + (cats.length ? kv([['Catégorie', cats.slice(-2).join(' › ')]]) : '')
+      + (labels.length ? '<div class="labels">' + labels.map(function(l){ return '<span>' + esc(l) + '</span>'; }).join('') + '</div>' : '');
+    secSet('rank', rs.join(' · '), rb);
+    // Ingrédients et allergènes
+    var ingr = o.ingredients_text_fr || o.ingredients_text || '';
+    var allerg = (o.allergens_tags || []).map(offAllergen), traces = (o.traces_tags || []).map(offAllergen);
+    var is = allerg.length ? 'Allergènes : ' + allerg.join(', ') : (ingr ? ingr.replace(/_/g, '') : (traces.length ? 'Traces : ' + traces.join(', ') : ''));
+    var ib = (ingr ? '<p>' + esc(ingr).replace(/_([^_]+)_/g, '<strong>$1</strong>') + '</p>' : '')
+      + (allerg.length || traces.length ? '<div class="allerg">⚠️ ' + (allerg.length ? '<b>Allergènes :</b> ' + esc(allerg.join(', ')) : '') + (traces.length ? (allerg.length ? '<br>' : '') + '<b>Traces possibles :</b> ' + esc(traces.join(', ')) : '') + '</div>' : '');
+    secSet('ingr', is, ib);
+    // Valeurs nutritionnelles
+    var n = o.nutriments || {}, nt = nutriTable(n), ns = '';
+    if (n['energy-kcal_100g'] != null) ns = Math.round(+n['energy-kcal_100g']) + ' kcal';
+    if (n.sugars_100g != null) ns += (ns ? ' · ' : '') + 'sucres ' + (Math.round(+n.sugars_100g * 10) / 10).toString().replace('.', ',') + ' g';
+    if (n.salt_100g != null) ns += (ns ? ' · ' : '') + 'sel ' + (Math.round(+n.salt_100g * 100) / 100).toString().replace('.', ',') + ' g';
+    secSet('nutri', nt ? (ns ? ns + ' pour 100 g' : 'Pour 100 g') : '', nt);
+    // Conservation et conseils
+    var use = [['Conservation', o.conservation_conditions_fr], ['Préparation', o.preparation_fr || o.preparation], ['Précautions', o.warning_fr], ['Emballage', o.packaging_text_fr], ['Service consommateurs', o.customer_service_fr]]
+      .filter(function(r){ return r[1] && String(r[1]).trim(); });
+    secSet('use', use.map(function(r){ return r[0]; }).join(' · '), use.map(function(r){ return '<p><strong>' + r[0] + ' :</strong> ' + esc(r[1]) + '</p>'; }).join(''));
+    var src = document.getElementById('secs-src');
+    if (src) src.innerHTML = 'Informations : <a href="https://fr.openfoodfacts.org/produit/' + code + '" target="_blank" rel="noopener">Open Food Facts</a>, base publique des produits alimentaires.';
+    secsAllLabel(); moreCheck();
+  }).catch(function(){ secsNoData(p); });
 }
 
 function stepItem(d){ var n = S.cur + d; if (n >= 0 && n < S.view.length) openItem(S.view[n].id); }
