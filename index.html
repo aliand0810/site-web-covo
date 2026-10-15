@@ -557,6 +557,15 @@ dl.kv dd{font-weight:800;font-size:.93rem;margin-top:2px;overflow-wrap:anywhere;
 .intro{cursor:default;}
 @media (prefers-reduced-motion:reduce){.intro *{animation-duration:.01s !important;animation-delay:0s !important;}}
 
+
+/* Prix réservés aux membres */
+.price.lock .o{display:none;}
+.price .lk{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:800;color:var(--blue);background:var(--blue-50);padding:5px 9px;border-radius:999px;white-space:nowrap;}
+.price .lk .i3{font-size:.95rem;}
+.pd-buy .price.lock{flex-direction:row;}
+.pd-buy .price .lk{font-size:.95rem;padding:9px 14px;}
+.pr-lock{height:46px;}
+
 /* ── Pied de page ── */
 footer{background:var(--navy);color:#c9d7ec;margin-top:auto;}
 .f-top{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:clamp(20px,3vw,40px);padding-top:clamp(30px,4vw,48px);padding-bottom:clamp(30px,4vw,48px);}
@@ -847,7 +856,8 @@ function emo(c){ return ico(catIcon(c)); }
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 function eur(v){ return (+v||0).toFixed(2).replace('.',','); }
-function pct(p){ return p.oldPrice ? Math.max(1, Math.round((1 - p.price/p.oldPrice)*100)) : 0; }
+function pct(p){ if (p.oldPrice && p.price) return Math.max(1, Math.round((1 - p.price/p.oldPrice)*100)); return +p.pct || 0; }
+function isPromo(p){ return pct(p) > 0; }
 function isNew(p){ var t = Date.parse(p.createdAt||''); return t && (Date.now()-t) < CFG.newDays*864e5; }
 function colorOf(cat){ return S.colors[cat] || '#1c55a0'; }
 function slug(c){ return 'r-' + String(c).toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g,'-'); }
@@ -1143,9 +1153,27 @@ function authToken(){
     return j.id_token;
   });
 }
+/* ═══ PRIX RÉSERVÉS AUX CLIENTS CONNECTÉS : catalogue_private/prices ═══ */
+S.pr = null;
+function applyPrices(){
+  all().forEach(function(p){
+    if (!('_pub' in p)) { p._pub = [p.price != null ? +p.price : null, p.oldPrice != null ? +p.oldPrice : null]; if (p.pct == null && p._pub[0] && p._pub[1]) p.pct = Math.max(1, Math.round((1 - p._pub[0] / p._pub[1]) * 100)); }
+    var v = S.auth ? ((S.pr && S.pr[String(p.id)]) || (p._pub[0] != null ? p._pub : null)) : null;
+    p.price = v ? v[0] : null; p.oldPrice = v ? v[1] : null;
+  });
+}
+function loadPrices(){
+  if (!S.auth) { S.pr = null; return Promise.resolve(); }
+  return authToken().then(function(t){
+    return fetch('https://firestore.googleapis.com/v1/projects/' + CFG.projectId + '/databases/(default)/documents/catalogue_private/prices', { headers: { Authorization: 'Bearer ' + t }, cache: 'no-store' });
+  }).then(function(r){
+    if (!r.ok) { if (r.status === 404) S.pr = {}; return; }
+    return r.json().then(function(doc){ S.pr = JSON.parse(((doc.fields || {}).data || {}).stringValue || '{}'); });
+  }).catch(function(e){ console.warn('[Catalogue] prix', e); });
+}
 function loadBarcodes(){
-  if (!S.auth) { S.bc = null; accUI(); return Promise.resolve(); }
-  var before = JSON.stringify(S.bc) + S.bcErr;
+  if (!S.auth) { S.bc = null; S.pr = null; accUI(); return Promise.resolve(); }
+  var before = JSON.stringify(S.bc) + S.bcErr + JSON.stringify(S.pr);
   return authToken().then(function(t){
     return fetch('https://firestore.googleapis.com/v1/projects/' + CFG.projectId + '/databases/(default)/documents/catalogue_private/barcodes', { headers: { Authorization: 'Bearer ' + t }, cache: 'no-store' });
   }).then(function(r){
@@ -1156,11 +1184,11 @@ function loadBarcodes(){
     console.warn('[Catalogue] codes-barres', e);
     if (!S.auth) { S.bc = null; return; }
     S.bc = {}; S.bcErr = /403/.test(String(e && e.message)) ? 'refus' : 'reseau';
-  }).then(function(){ if (JSON.stringify(S.bc) + S.bcErr !== before) authUI(); else accUI(); });
+  }).then(loadPrices).then(function(){ if (JSON.stringify(S.bc) + S.bcErr + JSON.stringify(S.pr) !== before) authUI(); else accUI(); });
 }
 function authUI(){
-  accUI();
-  if (S.curId) { S.curId = null; S.route = ''; route(); }
+  accUI(); applyPrices();
+  S.curId = null; S.route = ''; route();
 }
 function accUI(){
   var a = S.auth;
@@ -1219,7 +1247,7 @@ function loginSubmit(ev){
   }).then(function(){ btn.disabled = false; btn.textContent = 'Se connecter'; });
   return false;
 }
-function logout(){ authSave(null); S.bc = null; S.bcErr = ''; S.acc = { client: null, items: [], loaded: false, busy: false, err: '' }; authUI(); accRefresh(); if (S.route === '#/compte') { S.route = ''; route(); } toast('Déconnecté'); }
+function logout(){ authSave(null); S.bc = null; S.bcErr = ''; S.pr = null; S.acc = { client: null, items: [], loaded: false, busy: false, err: '' }; authUI(); accRefresh(); if (S.route === '#/compte') { S.route = ''; route(); } toast('Déconnecté'); }
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') loginClose(); });
 /* Bloc code-barres de la page article */
 function bcBlockHTML(p){
@@ -1635,7 +1663,7 @@ function cats(){
   var d = S.data || {}, list = all();
   return (d.categories && d.categories.length ? d.categories : Array.from(new Set(list.map(function(p){ return p.category; })))).filter(Boolean).slice().sort(function(a,b){ return a.localeCompare(b,'fr'); });
 }
-function promos(){ return all().filter(function(p){ return p.available && p.oldPrice; }).sort(function(a,b){ return pct(b) - pct(a); }); }
+function promos(){ return all().filter(function(p){ return p.available && isPromo(p); }).sort(function(a,b){ return pct(b) - pct(a); }); }
 function news(){ return all().filter(function(p){ return p.available && isNew(p); }).sort(function(a,b){ return (Date.parse(b.createdAt)||0) - (Date.parse(a.createdAt)||0); }); }
 function byCat(c){ return all().filter(function(p){ return p.category === c; }); }
 function enc(s){ return encodeURIComponent(String(s)); }
@@ -1643,6 +1671,7 @@ function plural(n, w){ return n + ' ' + w + (n > 1 ? 's' : ''); }
 
 /* Prix : euros en grand, centimes en exposant */
 function priceHTML(p){
+  if (p.price == null) return '<div class="price lock"><span class="o"></span><span class="lk">' + ico('gift') + ' Prix membres</span></div>';
   var parts = (+p.price||0).toFixed(2).split('.');
   return '<div class="price' + (p.oldPrice ? ' promo' : '') + '"><span class="o">' + (p.oldPrice ? eur(p.oldPrice) + ' €' : '') + '</span>'
     + '<span class="p">' + parts[0] + '<sup>,' + parts[1] + ' €</sup>' + (p.unit === 'kg' ? '<small>/kg</small>' : '') + '</span></div>';
@@ -1651,7 +1680,7 @@ function badgesHTML(p){
   var b = [];
   if (!p.available) b.push('<span class="b-out">Rupture</span>');
   else {
-    if (p.oldPrice) b.push('<span class="b-pct">-' + pct(p) + ' %</span>');
+    if (isPromo(p)) b.push('<span class="b-pct">-' + pct(p) + ' %</span>');
     if (isNew(p)) b.push('<span class="b-new">Nouveau</span>');
   }
   return b.length ? '<div class="bdg">' + b.join('') + '</div>' : '';
@@ -1725,7 +1754,7 @@ function viewHome(){
     + '</div></section>';
   h += '<section class="block">' + secT('Nos rayons', null) + '<div class="cats3">'
     + cs.map(function(c, i){
-        var n = byCat(c).length, np = byCat(c).filter(function(p){ return p.available && p.oldPrice; }).length;
+        var n = byCat(c).length, np = byCat(c).filter(function(p){ return p.available && isPromo(p); }).length;
         return '<a class="c3" href="#/rayon/' + enc(c) + '" style="--c:' + colorOf(c) + ';--i:' + i + '">'
           + '<span class="c3-sway"><span class="c3-in"><span class="c3-face">'
           + '<span class="c3-ring" aria-hidden="true"></span>'
@@ -1781,8 +1810,8 @@ function drawFeat(anim){
   var el = document.getElementById('feat'); if (!el) return;
   var items = promos().slice(0, 6), p = items[S.feat]; if (!p) return;
   el.innerHTML = '<div class="tx"><span class="k">' + ico('flame') + ' Promotion du moment</span><h1>' + esc(p.name) + '</h1>'
-    + '<p class="sub">' + esc([p.brand, 'Rayon ' + p.category].filter(Boolean).join(' · ')) + ' — vous économisez ' + eur(p.oldPrice - p.price) + ' €</p>'
-    + '<div class="pr-row"><span class="pr">' + eur(p.price) + ' €' + (p.unit === 'kg' ? '<small style="font-size:.45em">/kg</small>' : '') + '</span><span class="old">' + eur(p.oldPrice) + ' €</span></div>'
+    + '<p class="sub">' + esc([p.brand, 'Rayon ' + p.category].filter(Boolean).join(' · ')) + (p.price != null && p.oldPrice ? ' — vous économisez ' + eur(p.oldPrice - p.price) + ' €' : ' — ' + pct(p) + ' % de remise') + '</p>'
+    + (p.price == null ? '<div class="pr-row"><button type="button" class="btn sec pr-lock" onclick="event.preventDefault();loginOpen()">' + ico('gift') + ' Voir le prix membre</button></div>' : '<div class="pr-row"><span class="pr">' + eur(p.price) + ' €' + (p.unit === 'kg' ? '<small style="font-size:.45em">/kg</small>' : '') + '</span><span class="old">' + eur(p.oldPrice) + ' €</span></div>')
     + '<a class="btn pri" href="#/article/' + enc(p.id) + '">Voir l\'article</a></div>'
     + '<a class="pic" href="#/article/' + enc(p.id) + '" aria-label="Voir ' + esc(p.name) + '"><span class="box">' + imgHTML(p) + '</span><span class="badge">-' + pct(p) + '%</span></a>'
     + (items.length > 1 ? '<div class="dots">' + items.map(function(_, i){ return '<button class="' + (i === S.feat ? 'on' : '') + '" onclick="goFeat(' + i + ')" aria-label="Promotion ' + (i + 1) + '"></button>'; }).join('') + '</div>' : '');
@@ -1802,20 +1831,21 @@ function startFeat(){
 /* ── Listes : rayon, promotions, nouvel arrivage, tous, recherche ── */
 function sorter(s){
   s = s || S.sort;
+  if (!S.auth && /^price/.test(s)) s = 'reco';
   return function(a,b){
-    if (s === 'price-asc') return a.price - b.price;
-    if (s === 'price-desc') return b.price - a.price;
+    if (s === 'price-asc') return (+a.price||0) - (+b.price||0);
+    if (s === 'price-desc') return (+b.price||0) - (+a.price||0);
     if (s === 'promo') return pct(b) - pct(a) || a.name.localeCompare(b.name,'fr');
     if (s === 'new') return (Date.parse(b.createdAt||'')||0) - (Date.parse(a.createdAt||'')||0);
     if (s === 'name') return a.name.localeCompare(b.name,'fr');
-    return (b.available?1:0) - (a.available?1:0) || (b.oldPrice?1:0) - (a.oldPrice?1:0) || a.name.localeCompare(b.name,'fr');
+    return (b.available?1:0) - (a.available?1:0) || (isPromo(b)?1:0) - (isPromo(a)?1:0) || a.name.localeCompare(b.name,'fr');
   };
 }
 function norm(s){ return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
 function viewList(kind, param){
   S.curId = null;
   var items, title, icon, sub, crumb, active, extra = '';
-  if (kind === 'promo') { items = all().filter(function(p){ return p.oldPrice; }); title = 'Promotions'; icon = '' + ico('flame') + ''; sub = 'Les prix barrés du moment, mis à jour depuis la caisse.'; crumb = [['Promotions']]; active = 'promo'; }
+  if (kind === 'promo') { items = all().filter(isPromo); title = 'Promotions'; icon = '' + ico('flame') + ''; sub = 'Les prix barrés du moment, mis à jour depuis la caisse.'; crumb = [['Promotions']]; active = 'promo'; }
   else if (kind === 'new') { items = all().filter(isNew); title = 'Nouvel arrivage'; icon = '' + ico('sparkle') + ''; sub = 'Les articles entrés en rayon ces ' + CFG.newDays + ' derniers jours.'; crumb = [['Nouvel arrivage']]; active = 'new'; }
   else if (kind === 'cat') { items = byCat(param); title = param; icon = emo(param); sub = 'Tous les articles du rayon ' + param + '.'; crumb = [[param]]; active = 'cat:' + param; }
   else if (kind === 'search') {
@@ -1839,7 +1869,7 @@ function viewList(kind, param){
     + '<p>' + plural(items.length, 'article') + (hidden ? ' disponible' + (items.length > 1 ? 's' : '') + ' · ' + hidden + ' en rupture masqué' + (hidden > 1 ? 's' : '') : '') + (sub ? ' — ' + esc(sub) : '') + '</p></div>'
     + '<div class="tools"><label class="sw"><input type="checkbox" ' + (S.only ? 'checked' : '') + ' onchange="setOnly(this.checked)"><i></i>Disponibles uniquement</label>'
     + '<select onchange="setSort(this.value)" aria-label="Trier les articles">'
-    + [['reco','Trier : pertinence'],['price-asc','Prix croissant'],['price-desc','Prix décroissant'],['promo','Meilleures promotions'],['new','Nouveautés d\'abord'],['name','Nom (A → Z)']].map(function(o){ return '<option value="' + o[0] + '"' + (S.sort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
+    + [['reco','Trier : pertinence'],['price-asc','Prix croissant'],['price-desc','Prix décroissant'],['promo','Meilleures promotions'],['new','Nouveautés d\'abord'],['name','Nom (A → Z)']].filter(function(o){ return S.auth || !/^price/.test(o[0]); }).map(function(o){ return '<option value="' + o[0] + '"' + (S.sort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
     + '</select></div></div>' + extra
     + '<div class="grid">' + (items.length ? items.map(cardHTML).join('')
       : '<div class="empty"><b>' + (kind === 'search' ? '' + ico('search') + '' : '' + ico('box') + '') + '</b>' + (kind === 'search' ? 'Aucun article ne correspond à « ' + esc(param) + ' ». Essayez un autre mot ou <a href="#/tous">parcourez tout le catalogue</a>.' : (hidden ? 'Tous les articles de cette liste sont en rupture. <a href="javascript:setOnly(false)">Les afficher quand même</a>.' : 'Aucun article pour le moment. <a href="#/">Retour à l\'accueil</a>.')) + '</div>')
@@ -1880,7 +1910,7 @@ function viewProduct(id, same){
     + '<div class="pd-info">'
     + '<a class="pd-cat" href="#/rayon/' + enc(p.category) + '">' + emo(p.category) + ' Rayon ' + esc(p.category) + '</a>'
     + '<h1>' + esc(p.name) + '</h1>' + (p.brand ? '<div class="pd-brand">' + esc(p.brand) + '</div>' : '')
-    + '<div class="pd-buy"><div class="pd-pr">' + priceHTML(p) + (p.oldPrice ? '<span class="pd-save">Vous économisez ' + eur(p.oldPrice - p.price) + ' € (-' + pct(p) + ' %)</span>' : '') + '</div>'
+    + '<div class="pd-buy"><div class="pd-pr">' + priceHTML(p) + (p.oldPrice && p.price != null ? '<span class="pd-save">Vous économisez ' + eur(p.oldPrice - p.price) + ' € (-' + pct(p) + ' %)</span>' : '') + '</div>'
     + '<dl class="pd-meta"><div><dt>Disponibilité</dt><dd class="' + (p.available ? 'ok' : 'ko') + '">' + (p.available ? '● En stock en magasin' : '● En rupture') + '</dd></div>'
     + '<div><dt>Prix</dt><dd>' + (p.unit === 'kg' ? 'au kilo' : 'à l\'unité') + '</dd></div>'
     + (isNew(p) ? '<div><dt>En rayon depuis</dt><dd>' + new Date(Date.parse(p.createdAt)).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + '</dd></div>' : '') + '</dl>'
@@ -1904,6 +1934,7 @@ document.addEventListener('keydown', function(e){
 /* ── Rendu général (à chaque mise à jour des données) ── */
 function paint(){
   var d = S.data || {}, list = all(), shop = d.shop || {};
+  applyPrices();
   S.colors = {}; cats().forEach(function(c, i){ S.colors[c] = PALETTE[i % PALETTE.length]; });
   var name = shop.name || 'COVO';
   document.getElementById('shop-name').textContent = name;
