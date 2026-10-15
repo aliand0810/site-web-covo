@@ -546,6 +546,15 @@ dl.kv dd{font-weight:800;font-size:.93rem;margin-top:2px;overflow-wrap:anywhere;
 .intro .skip{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom));font-size:.8rem;color:var(--ink-3);font-weight:600;opacity:0;animation:inLetter .5s 1.2s forwards;}
 .intro .dots i{position:absolute;width:6px;height:6px;border-radius:50%;background:#e8822e;opacity:0;animation:inDot 1.6s ease-out forwards;}
 @keyframes inDot{0%{opacity:0;transform:translate(0,0) scale(.4);}20%{opacity:1;}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1);}}
+.intro .enter{margin-top:30px;display:inline-flex;align-items:center;gap:10px;height:54px;padding:0 28px;border:none;border-radius:999px;cursor:pointer;
+  background:linear-gradient(135deg,#e8822e,#d76a17);color:#fff;font:inherit;font-size:1.05rem;font-weight:800;letter-spacing:.01em;
+  box-shadow:0 12px 28px rgba(232,130,46,.35),0 2px 6px rgba(13,45,92,.15);opacity:0;transform:translateY(14px);animation:inLetter .6s 2.3s cubic-bezier(.2,.8,.2,1.2) forwards;transition:transform .2s,box-shadow .2s;}
+.intro .enter span{transition:transform .25s;}
+.intro .enter:hover{box-shadow:0 16px 34px rgba(232,130,46,.45),0 2px 6px rgba(13,45,92,.15);}
+.intro .enter:hover span{transform:translateX(4px);}
+.intro .enter:active{transform:scale(.97);}
+.intro .enter:focus-visible{outline:3px solid #1c55a0;outline-offset:4px;}
+.intro{cursor:default;}
 @media (prefers-reduced-motion:reduce){.intro *{animation-duration:.01s !important;animation-delay:0s !important;}}
 
 /* ── Pied de page ── */
@@ -1594,15 +1603,21 @@ function covoIntro(opts){
     + '<div class="coin">' + (logo ? '<img src="' + logo + '" alt="">' : '') + '</div><div class="shine"></div></div>'
     + '<div class="word" aria-hidden="true"><span>C</span><span>O</span><span>V</span><span>O</span></div>'
     + '<div class="tag">Plus qu’un magasin, <b>une expérience</b></div>'
-    + (opts.hello ? '<div class="hi">' + esc(opts.hello) + '</div>' : '<div class="bar"></div>')
-    + '<div class="skip">Toucher pour entrer</div>';
+    + (opts.hello ? '<div class="hi">' + esc(opts.hello) + '</div>' : '<div class="bar"></div><button type="button" class="enter" id="intro-enter">Entrer dans le catalogue <span aria-hidden="true">→</span></button>')
+    + (opts.hello ? '<div class="skip">Toucher pour continuer</div>' : '');
   document.body.appendChild(el);
   document.documentElement.style.overflow = 'hidden';
   var done = false;
   function close(){ if (done) return; done = true; el.classList.add('out'); setTimeout(function(){ el.remove(); document.documentElement.style.overflow = ''; }, 760); }
-  el.addEventListener('click', close);
-  document.addEventListener('keydown', function k(e){ if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { close(); document.removeEventListener('keydown', k); } });
-  setTimeout(close, matchMedia('(prefers-reduced-motion: reduce)').matches ? 900 : (opts.hello ? 3300 : 3000));
+  if (opts.hello) {
+    el.addEventListener('click', close);
+    setTimeout(close, matchMedia('(prefers-reduced-motion: reduce)').matches ? 900 : 3300);
+  } else {
+    // Arrivée sur le site : on entre dans le catalogue en cliquant sur le bouton
+    var btn = el.querySelector('#intro-enter');
+    btn.addEventListener('click', function(e){ e.stopPropagation(); close(); });
+  }
+  document.addEventListener('keydown', function k(e){ if (e.key === 'Escape' || e.key === 'Enter') { close(); document.removeEventListener('keydown', k); } });
 }
 (function(){
   var seen = false; try { seen = sessionStorage.getItem('covo_intro') === '1'; sessionStorage.setItem('covo_intro', '1'); } catch(e) {}
