@@ -172,6 +172,7 @@ main{flex:1;padding:clamp(18px,2.6vw,30px) 0 clamp(36px,5vw,64px);}
 .card .br{font-size:.76rem;font-weight:700;color:var(--ink-2);text-transform:none;min-height:1.15em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .card .nm{font-weight:700;font-size:.95rem;line-height:1.3;height:2.6em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
 .card .ft{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;margin-top:auto;padding-top:8px;}
+.card .ft .stk:only-child{margin-left:auto;}
 .price{display:flex;flex-direction:column;line-height:1;}
 .price .o{font-size:.8rem;color:var(--ink-3);text-decoration:line-through;margin-bottom:3px;min-height:.8rem;}
 .price .p{font-family:var(--display);font-weight:800;font-size:1.45rem;letter-spacing:-.01em;}
@@ -226,6 +227,7 @@ main{flex:1;padding:clamp(18px,2.6vw,30px) 0 clamp(36px,5vw,64px);}
 .pd-pr{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;}
 .pd-save{font-size:.88rem;font-weight:800;color:var(--promo);background:var(--promo-50);padding:6px 10px;border-radius:8px;}
 .pd-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;border-top:1px solid var(--line);padding-top:14px;}
+.pd-buy>.pd-meta:first-child{border-top:none;padding-top:0;}
 .pd-meta dt{font-size:.78rem;color:var(--ink-2);font-weight:600;}
 .pd-meta dd{font-weight:800;font-size:1rem;margin-top:2px;}
 .pd-meta dd.ok{color:var(--ok);} .pd-meta dd.ko{color:var(--ko);}
@@ -1671,7 +1673,7 @@ function plural(n, w){ return n + ' ' + w + (n > 1 ? 's' : ''); }
 
 /* Prix : euros en grand, centimes en exposant */
 function priceHTML(p){
-  if (p.price == null) return '<div class="price lock"><span class="o"></span><span class="lk">' + ico('gift') + ' Prix membres</span></div>';
+  if (p.price == null) return '';   // non connecté : aucune information de prix
   var parts = (+p.price||0).toFixed(2).split('.');
   return '<div class="price' + (p.oldPrice ? ' promo' : '') + '"><span class="o">' + (p.oldPrice ? eur(p.oldPrice) + ' €' : '') + '</span>'
     + '<span class="p">' + parts[0] + '<sup>,' + parts[1] + ' €</sup>' + (p.unit === 'kg' ? '<small>/kg</small>' : '') + '</span></div>';
@@ -1810,8 +1812,8 @@ function drawFeat(anim){
   var el = document.getElementById('feat'); if (!el) return;
   var items = promos().slice(0, 6), p = items[S.feat]; if (!p) return;
   el.innerHTML = '<div class="tx"><span class="k">' + ico('flame') + ' Promotion du moment</span><h1>' + esc(p.name) + '</h1>'
-    + '<p class="sub">' + esc([p.brand, 'Rayon ' + p.category].filter(Boolean).join(' · ')) + (p.price != null && p.oldPrice ? ' — vous économisez ' + eur(p.oldPrice - p.price) + ' €' : ' — ' + pct(p) + ' % de remise') + '</p>'
-    + (p.price == null ? '<div class="pr-row"><button type="button" class="btn sec pr-lock" onclick="event.preventDefault();loginOpen()">' + ico('gift') + ' Voir le prix membre</button></div>' : '<div class="pr-row"><span class="pr">' + eur(p.price) + ' €' + (p.unit === 'kg' ? '<small style="font-size:.45em">/kg</small>' : '') + '</span><span class="old">' + eur(p.oldPrice) + ' €</span></div>')
+    + '<p class="sub">' + esc([p.brand, 'Rayon ' + p.category].filter(Boolean).join(' · ')) + (p.price != null && p.oldPrice ? ' — vous économisez ' + eur(p.oldPrice - p.price) + ' €' : '') + '</p>'
+    + (p.price == null ? '' : '<div class="pr-row"><span class="pr">' + eur(p.price) + ' €' + (p.unit === 'kg' ? '<small style="font-size:.45em">/kg</small>' : '') + '</span><span class="old">' + eur(p.oldPrice) + ' €</span></div>')
     + '<a class="btn pri" href="#/article/' + enc(p.id) + '">Voir l\'article</a></div>'
     + '<a class="pic" href="#/article/' + enc(p.id) + '" aria-label="Voir ' + esc(p.name) + '"><span class="box">' + imgHTML(p) + '</span><span class="badge">-' + pct(p) + '%</span></a>'
     + (items.length > 1 ? '<div class="dots">' + items.map(function(_, i){ return '<button class="' + (i === S.feat ? 'on' : '') + '" onclick="goFeat(' + i + ')" aria-label="Promotion ' + (i + 1) + '"></button>'; }).join('') + '</div>' : '');
@@ -1845,7 +1847,7 @@ function norm(s){ return String(s || '').toLowerCase().normalize('NFD').replace(
 function viewList(kind, param){
   S.curId = null;
   var items, title, icon, sub, crumb, active, extra = '';
-  if (kind === 'promo') { items = all().filter(isPromo); title = 'Promotions'; icon = '' + ico('flame') + ''; sub = 'Les prix barrés du moment, mis à jour depuis la caisse.'; crumb = [['Promotions']]; active = 'promo'; }
+  if (kind === 'promo') { items = all().filter(isPromo); title = 'Promotions'; icon = '' + ico('flame') + ''; sub = S.auth ? 'Les prix barrés du moment, mis à jour depuis la caisse.' : 'Les promotions du moment, mises à jour depuis la caisse.'; crumb = [['Promotions']]; active = 'promo'; }
   else if (kind === 'new') { items = all().filter(isNew); title = 'Nouvel arrivage'; icon = '' + ico('sparkle') + ''; sub = 'Les articles entrés en rayon ces ' + CFG.newDays + ' derniers jours.'; crumb = [['Nouvel arrivage']]; active = 'new'; }
   else if (kind === 'cat') { items = byCat(param); title = param; icon = emo(param); sub = 'Tous les articles du rayon ' + param + '.'; crumb = [[param]]; active = 'cat:' + param; }
   else if (kind === 'search') {
@@ -1910,9 +1912,9 @@ function viewProduct(id, same){
     + '<div class="pd-info">'
     + '<a class="pd-cat" href="#/rayon/' + enc(p.category) + '">' + emo(p.category) + ' Rayon ' + esc(p.category) + '</a>'
     + '<h1>' + esc(p.name) + '</h1>' + (p.brand ? '<div class="pd-brand">' + esc(p.brand) + '</div>' : '')
-    + '<div class="pd-buy"><div class="pd-pr">' + priceHTML(p) + (p.oldPrice && p.price != null ? '<span class="pd-save">Vous économisez ' + eur(p.oldPrice - p.price) + ' € (-' + pct(p) + ' %)</span>' : '') + '</div>'
+    + '<div class="pd-buy">' + (p.price == null ? '' : '<div class="pd-pr">' + priceHTML(p) + (p.oldPrice ? '<span class="pd-save">Vous économisez ' + eur(p.oldPrice - p.price) + ' € (-' + pct(p) + ' %)</span>' : '') + '</div>')
     + '<dl class="pd-meta"><div><dt>Disponibilité</dt><dd class="' + (p.available ? 'ok' : 'ko') + '">' + (p.available ? '● En stock en magasin' : '● En rupture') + '</dd></div>'
-    + '<div><dt>Prix</dt><dd>' + (p.unit === 'kg' ? 'au kilo' : 'à l\'unité') + '</dd></div>'
+    + (p.price == null ? '' : '<div><dt>Prix</dt><dd>' + (p.unit === 'kg' ? 'au kilo' : 'à l\'unité') + '</dd></div>')
     + (isNew(p) ? '<div><dt>En rayon depuis</dt><dd>' + new Date(Date.parse(p.createdAt)).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + '</dd></div>' : '') + '</dl>'
     + bcBlockHTML(p)
     + '<div class="pd-cta" id="pd-resa">' + resaBlockHTML(p) + '</div></div>'
