@@ -458,6 +458,47 @@ dl.kv dd{font-weight:800;font-size:.93rem;margin-top:2px;overflow-wrap:anywhere;
   .hi-t{min-width:0;}
 }
 
+
+/* Échanges magasin ⇄ client */
+.chat{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;}
+.chat-l{max-height:380px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(#fbfcfe,#f4f6f9);}
+.chat-e{color:var(--ink-2);font-size:.9rem;text-align:center;padding:18px 10px;}
+.msg{max-width:78%;display:flex;flex-direction:column;gap:3px;}
+.msg.shop{align-self:flex-start;} .msg.me{align-self:flex-end;align-items:flex-end;}
+.mb{padding:10px 13px;border-radius:14px;font-size:.93rem;line-height:1.45;white-space:normal;overflow-wrap:anywhere;}
+.msg.shop .mb{background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px;}
+.msg.shop.new .mb{border-color:var(--ok);box-shadow:0 0 0 3px #e6f4ec;}
+.msg.me .mb{background:var(--blue);color:#fff;border-bottom-right-radius:4px;}
+.mm{font-size:.74rem;color:var(--ink-2);font-weight:600;}
+.mm b{color:var(--ok);}
+.chat-f{display:flex;gap:10px;padding:12px;border-top:1px solid var(--line);}
+.chat-f textarea{flex:1;border:1.5px solid var(--line-2);border-radius:10px;padding:10px 12px;font:inherit;font-size:.95rem;resize:vertical;min-height:46px;outline:none;}
+.chat-f textarea:focus{border-color:var(--blue);}
+.chat-f .btn{align-self:flex-end;}
+.chip.av{background:#e6f4ec;color:var(--ok);}
+.chip.ok{background:var(--ok);color:#fff;}
+/* Ticket de caisse dans l'historique */
+.hi-d{border-top:1px solid var(--line);}
+.hi-d:first-child{border-top:none;}
+.hi-d>summary{list-style:none;cursor:pointer;border-top:none;}
+.hi-d>summary::-webkit-details-marker{display:none;}
+.hi-d .chev{width:8px;height:8px;border-right:2.2px solid var(--ink-2);border-bottom:2.2px solid var(--ink-2);transform:rotate(45deg);margin:0 4px 3px 2px;transition:transform .2s;flex-shrink:0;}
+.hi-d[open] .chev{transform:rotate(-135deg);margin:3px 4px 0 2px;}
+.hi-d+.hi,.hi+.hi-d{border-top:1px solid var(--line);}
+.tk{margin:0 0 12px;padding:12px 14px;border:1px dashed var(--line-2);border-radius:12px;background:#fcfcfd;font-variant-numeric:tabular-nums;}
+.tk-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-size:.88rem;}
+.tk-h span{font-weight:800;letter-spacing:.03em;color:var(--ink-2);}
+.tk-t{width:100%;border-collapse:collapse;font-size:.88rem;}
+.tk-t th{text-align:right;font-size:.74rem;color:var(--ink-2);font-weight:700;padding:4px 0 6px;border-bottom:1px solid var(--line);}
+.tk-t td{text-align:right;padding:6px 0 6px 8px;border-top:1px solid var(--line);}
+.tk-t th:first-child,.tk-t td:first-child{text-align:left;padding-left:0;}
+.tk-t tbody tr:first-child td{border-top:none;}
+.tk-t tfoot td{font-weight:800;border-top:1.5px solid var(--ink);}
+.tk-m{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:10px;}
+.tk-m dt{font-size:.74rem;color:var(--ink-2);font-weight:600;}
+.tk-m dd{font-weight:700;font-size:.88rem;}
+@media (max-width:640px){.msg{max-width:90%;}.chat-f{flex-direction:column;}.chat-f .btn{align-self:stretch;}.tk-t th:nth-child(3),.tk-t td:nth-child(3){display:none;}}
+
 /* ── Pied de page ── */
 footer{background:var(--navy);color:#c9d7ec;margin-top:auto;}
 .f-top{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:clamp(20px,3vw,40px);padding-top:clamp(30px,4vw,48px);padding-bottom:clamp(30px,4vw,48px);}
@@ -1173,8 +1214,9 @@ function fsGet(path){
 }
 function fsSet(path, obj){
   var fields = {}; Object.keys(obj).forEach(function(k){ fields[k] = fsEnc(obj[k]); });
+  var mask = Object.keys(obj).map(function(k){ return 'updateMask.fieldPaths=' + encodeURIComponent(k); }).join('&');
   return authToken().then(function(t){
-    return fetch(FS_DOCS + path, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: JSON.stringify({ fields: fields }) });
+    return fetch(FS_DOCS + path + '?' + mask, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: JSON.stringify({ fields: fields }) });
   }).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); });
 }
 function uid(){ return S.auth && S.auth.uid; }
@@ -1187,9 +1229,11 @@ function srvByKey(){ var m = {}; srvResa().forEach(function(r){ if (r.portalKey)
 function loadAccount(silent){
   if (!uid()) { S.acc = { client: null, items: [], loaded: false, busy: false, err: '' }; accRefresh(); return Promise.resolve(); }
   S.acc.busy = true;
-  var before = JSON.stringify([S.acc.client, S.acc.items, S.acc.err]), first = !S.acc.loaded;
+  var before = JSON.stringify([S.acc.client, S.acc.items, S.acc.err, S.acc.outbox]), first = !S.acc.loaded;
   return Promise.all([fsGet('clients/' + uid()), fsGet('reservations/' + uid())]).then(function(res){
     S.acc.client = res[0]; S.acc.items = (res[1] && Array.isArray(res[1].items)) ? res[1].items.filter(function(i){ return i && i.key; }) : [];
+    S.acc.outbox = (res[1] && Array.isArray(res[1].messages)) ? res[1].messages.filter(function(m){ return m && m.id; }) : [];
+    msgNotify(first);
     S.acc.loaded = true; S.acc.err = res[0] ? '' : 'nofiche';
     // Réservations traitées en boutique (récupérées / annulées) : elles disparaissent de la fiche → on les retire de la liste
     var srv = srvByKey(), keys = Object.keys(srv); seenAdd(keys);
@@ -1197,7 +1241,7 @@ function loadAccount(silent){
     if (res[0] && done.length) return resaWrite(S.acc.items.filter(function(i){ return done.indexOf(i) < 0; }));
   }).catch(function(e){
     console.warn('[Compte]', e); S.acc.err = /40[13]/.test(String(e && e.message)) ? 'refus' : 'reseau';
-  }).then(function(){ S.acc.busy = false; if (first || JSON.stringify([S.acc.client, S.acc.items, S.acc.err]) !== before) accRefresh(); });
+  }).then(function(){ S.acc.busy = false; if (first || JSON.stringify([S.acc.client, S.acc.items, S.acc.err, S.acc.outbox]) !== before) accRefresh(); });
 }
 function resaWrite(items){
   var c = S.acc.client || {};
@@ -1229,7 +1273,8 @@ function confirmCancel(it){ return window.confirm('Annuler la réservation de «
 /* Statut d'une réservation faite en ligne */
 function resaStatus(i){
   var s = srvByKey()[i.key];
-  if (s) return s.status === 'ready' ? { c: 'ok', t: 'Prête en magasin' } : { c: 'wait', t: 'Reçue · en attente de stock' };
+  if (s && s.prepared) return { c: 'ok', t: 'Panier prêt · mis à disposition par ' + (s.preparedBy || 'le magasin') + (s.preparedById ? ' (ID ' + s.preparedById + ')' : '') + (s.preparedAt ? ' le ' + new Date(s.preparedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ' à ' + new Date(s.preparedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '') };
+  if (s) return s.status === 'ready' ? { c: 'av', t: 'Disponible · en préparation' } : { c: 'wait', t: 'Reçue · en attente de stock' };
   return { c: 'sent', t: 'Transmise au magasin' };
 }
 function wantTxt(iso){
@@ -1242,19 +1287,56 @@ function wantTxt(iso){
 }
 function productById(id){ return all().filter(function(p){ return String(p.id) === String(id); })[0]; }
 function resaOf(p){ return S.acc.items.filter(function(i){ return String(i.id) === String(p.id); })[0]; }
-function readyCount(){ var n = 0; S.acc.items.forEach(function(i){ if (resaStatus(i).c === 'ok') n++; }); srvResa().forEach(function(r){ if (!r.portalKey && r.status === 'ready') n++; }); return n; }
+function readyCount(){ var n = 0; srvResa().forEach(function(r){ if (r.prepared || (!r.portalKey && r.status === 'ready')) n++; }); return n; }
+
+/* ═══ ÉCHANGES AVEC LE MAGASIN ═══
+   Messages du magasin (signés par le caissier : nom + identifiant) : fiche client (clients/{uid}.messages).
+   Messages du client : ajoutés à reservations/{uid}.messages, que Fidélité Pro relit. */
+function msgSeenKey(){ return 'covo_site_msgseen_' + uid(); }
+function msgSeen(){ try { return localStorage.getItem(msgSeenKey()) || ''; } catch(e) { return ''; } }
+function msgAll(){
+  var srv = ((S.acc.client || {}).messages || []).filter(function(m){ return m && m.id; }), ids = {};
+  srv.forEach(function(m){ ids[m.id] = 1; });
+  var pend = (S.acc.outbox || []).filter(function(m){ return !ids[m.id]; }).map(function(m){ return { id: m.id, from: 'client', at: m.at, text: m.text, pending: true }; });
+  return srv.concat(pend).sort(function(a, b){ return String(a.at).localeCompare(String(b.at)); });
+}
+function msgUnread(){ var s = msgSeen(); return msgAll().filter(function(m){ return m.from === 'shop' && String(m.at) > s; }).length; }
+function msgNotify(first){
+  var s = msgSeen(), fresh = msgAll().filter(function(m){ return m.from === 'shop' && String(m.at) > s; });
+  var last = fresh[fresh.length - 1];
+  if (!first && last && last.id !== S.acc.lastToast) { S.acc.lastToast = last.id; toast('Message du magasin : ' + String(last.text).split('\n')[0].slice(0, 70)); }
+  if (first && last) S.acc.lastToast = last.id;
+}
+function msgMarkRead(){ var m = msgAll().filter(function(x){ return x.from === 'shop'; }); if (m.length) try { localStorage.setItem(msgSeenKey(), String(m[m.length - 1].at)); } catch(e) {} }
+function msgSend(ev){
+  if (ev) ev.preventDefault();
+  var ta = document.getElementById('msg-in'), btn = document.getElementById('msg-btn'), txt = ta ? ta.value.trim() : '';
+  if (!txt) return false;
+  btn.disabled = true;
+  fsGet('reservations/' + uid()).then(function(doc){
+    var msgs = (doc && Array.isArray(doc.messages)) ? doc.messages.filter(function(m){ return m && m.id; }) : [];
+    msgs.push({ id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), from: 'client', at: new Date().toISOString(), text: txt.slice(0, 1000) });
+    msgs = msgs.slice(-50);
+    var c = S.acc.client || {};
+    return fsSet('reservations/' + uid(), { messages: msgs, clientName: c.name || '', barcode: c.barcode || '' }).then(function(){ S.acc.outbox = msgs; });
+  }).then(function(){ toast('Message envoyé au magasin'); S.acc.draft = ''; if (ta) { ta.value = ''; ta.blur(); } accRefresh(); })
+    .catch(function(){ toast('Envoi impossible. Vérifiez votre connexion.'); btn.disabled = false; });
+  return false;
+}
+var PAY = { cash: 'Espèces', especes: 'Espèces', espèces: 'Espèces', card: 'Carte bancaire', cb: 'Carte bancaire', carte: 'Carte bancaire', cheque: 'Chèque', chèque: 'Chèque', mixte: 'Paiement mixte', mixed: 'Paiement mixte', echel: 'Paiement en plusieurs fois', credit: 'Compte crédit', avoir: 'Avoir', virement: 'Virement', transfer: 'Virement', sumup: 'Carte bancaire (SumUp)' };
+function payTxt(m){ var k = String(m || '').toLowerCase(); return PAY[k] || (m ? String(m).charAt(0).toUpperCase() + String(m).slice(1) : ''); }
 
 /* Rafraîchit tout ce qui dépend du compte */
 function accRefresh(){
   var b = document.getElementById('acc-btn');
   if (b) {
-    var c = S.acc.client, n = readyCount();
+    var c = S.acc.client, n = S.auth ? msgUnread() : 0;
     b.innerHTML = S.auth
-      ? '<span class="av">' + esc(initials((c && c.name) || S.auth.code)) + '</span><span class="tx">Mon compte</span>' + (n ? '<span class="bub" title="Réservations prêtes">' + n + '</span>' : '')
+      ? '<span class="av">' + esc(initials((c && c.name) || S.auth.code)) + '</span><span class="tx">Mon compte</span>' + (n ? '<span class="bub" title="Nouveaux messages du magasin">' + n + '</span>' : '')
       : ico('gift') + '<span class="tx">Se connecter</span>';
     b.setAttribute('aria-label', S.auth ? 'Mon compte fidélité' : 'Se connecter avec mon compte fidélité');
   }
-  if (S.route === '#/compte') { S.route = ''; route(); }
+  if (S.route === '#/compte') { var ta = document.getElementById('msg-in'); if (ta) { S.acc.draft = ta.value; if (document.activeElement === ta) return; } S.route = ''; route(); }
   else if (S.curId) { var box = document.getElementById('pd-resa'); var p = productById(S.curId); if (box && p) box.innerHTML = resaBlockHTML(p); }
 }
 function initials(n){ return String(n || '?').trim().split(/\s+/).slice(0, 2).map(function(w){ return w.charAt(0).toUpperCase(); }).join(''); }
@@ -1371,6 +1453,15 @@ function viewAccount(){
     }).join('') + '</div>';
   }
   h += '</section>';
+  // Échanges avec le magasin
+  var seen = msgSeen(), msgs = msgAll().slice(-40);
+  h += '<section class="block" id="msgs">' + secT(ico('chat') + ' Échanges avec le magasin', msgs.length || null);
+  h += '<div class="chat"><div class="chat-l" id="chat-l">' + (msgs.length ? msgs.map(function(m){
+      var me = m.from === 'client', d = new Date(m.at), isNew = !me && String(m.at) > seen;
+      return '<div class="msg ' + (me ? 'me' : 'shop') + (isNew ? ' new' : '') + '"><div class="mb">' + esc(m.text).replace(/\n/g, '<br>') + '</div>'
+        + '<div class="mm">' + (me ? 'Vous' + (m.pending ? ' · envoyé, en attente de lecture' : '') : esc(m.by || 'Le magasin') + (m.byId ? ' · ID caissier ' + esc(m.byId) : '')) + (isNaN(d) ? '' : ' · ' + d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })) + (isNew ? ' · <b>nouveau</b>' : '') + '</div></div>';
+    }).join('') : '<div class="chat-e">Aucun message. Le magasin vous écrit ici quand votre panier est prêt ; vous pouvez aussi lui poser une question.</div>')
+    + '</div><form class="chat-f" onsubmit="return msgSend(event)"><textarea id="msg-in" rows="2" maxlength="1000" placeholder="Écrire au magasin…" aria-label="Votre message">' + esc(S.acc.draft || '') + '</textarea><button class="btn pri" id="msg-btn" type="submit">Envoyer</button></form></div></section>';
   // Échéances
   var ech = c.echeances || [];
   if (ech.length) h += '<section class="block">' + secT('Échéances à venir', ech.length) + '<div class="rl">' + ech.map(function(e){ var d = histDate(e.due); return '<div class="ri ech"><div class="ri-tx"><b>' + (d ? d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Date à définir') + '</b></div><b class="amt">' + eur(e.amount) + ' €</b></div>'; }).join('') + '</div></section>';
@@ -1384,14 +1475,29 @@ function viewAccount(){
     h += '<div class="secs">' + groups.map(function(g, gi){
       return '<details class="sec"' + (gi === 0 ? ' open' : '') + '><summary><span class="ic">' + ico('box') + '</span><span class="st"><b>' + g.l + '</b><small>' + g.ops.length + ' opération' + (g.ops.length > 1 ? 's' : '') + (g.tot ? ' · ' + eur(g.tot) + ' € d\'achats' : '') + (g.pts ? ' · +' + g.pts + ' points' : '') + '</small></span><span class="chev"></span></summary>'
         + '<div class="sec-b hist">' + g.ops.map(function(x){
-          var t = histType(x.h), amt = +x.h.amount || 0, pts = +x.h.points || 0;
-          return '<div class="hi"><span class="hi-t ' + t.toLowerCase() + '">' + t + '</span><span class="hi-l"><b>' + esc(x.h.label || t) + '</b><small>' + (x.d ? x.d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + x.d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '') + '</small></span>'
-            + '<span class="hi-a">' + (amt ? '<b>' + eur(amt) + ' €</b>' : '') + (pts ? '<small>+' + pts + ' pts</small>' : '') + '</span></div>';
+          var t = histType(x.h), amt = +x.h.amount || 0, pts = +x.h.points || 0, its = Array.isArray(x.h.items) ? x.h.items : [];
+          var nArt = its.reduce(function(a, it){ return a + (it.unit === 'kg' ? 1 : (+it.qty || 1)); }, 0);
+          var head = '<span class="hi-t ' + t.toLowerCase() + '">' + t + '</span><span class="hi-l"><b>' + esc(String(x.h.label || t).replace(/^[^A-Za-zÀ-ÿ0-9]+/, '')) + (its.length ? ' · ' + nArt + ' article' + (nArt > 1 ? 's' : '') : '') + '</b><small>' + (x.d ? x.d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + x.d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '') + (x.h.ticket ? ' · Ticket N°' + esc(x.h.ticket) : '') + '</small></span>'
+            + '<span class="hi-a">' + (amt ? '<b>' + eur(amt) + ' €</b>' : '') + (pts ? '<small>' + (pts > 0 ? '+' : '') + pts + ' pts</small>' : '') + '</span>';
+          var hasDet = its.length || x.h.ticket || x.h.payment || x.h.cashier;
+          if (!hasDet) return '<div class="hi">' + head + '</div>';
+          return '<details class="hi-d"><summary class="hi">' + head + '<span class="chev" aria-hidden="true"></span></summary><div class="tk">'
+            + '<div class="tk-h"><b>Ticket de caisse</b>' + (x.h.ticket ? '<span>N°' + esc(x.h.ticket) + '</span>' : '') + '</div>'
+            + (its.length ? '<table class="tk-t"><thead><tr><th>Article</th><th>Qté</th><th>Prix</th><th>Total</th></tr></thead><tbody>' + its.map(function(it){
+                var kg = it.unit === 'kg';
+                return '<tr><td>' + esc(it.name) + '</td><td>' + (kg ? String(+it.qty).replace('.', ',') + ' kg' : '×' + (+it.qty || 1)) + '</td><td>' + eur(it.price) + ' €' + (kg ? '/kg' : '') + '</td><td>' + eur(it.total) + ' €</td></tr>';
+              }).join('') + '</tbody><tfoot><tr><td colspan="3">Total</td><td>' + eur(amt) + ' €</td></tr></tfoot></table>' : '')
+            + '<dl class="tk-m">' + (x.d ? '<div><dt>Date</dt><dd>' + x.d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) + ' à ' + x.d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + '</dd></div>' : '')
+            + (x.h.payment ? '<div><dt>Paiement</dt><dd>' + esc(payTxt(x.h.payment)) + '</dd></div>' : '')
+            + (pts ? '<div><dt>Points</dt><dd>' + (pts > 0 ? '+' : '') + pts + '</dd></div>' : '')
+            + (x.h.cashier ? '<div><dt>Caissier</dt><dd>' + esc(x.h.cashier) + '</dd></div>' : '') + '</dl></div></details>';
         }).join('') + '</div></details>';
     }).join('') + '</div>';
   }
   h += '</section><div class="acc-foot"><span>Connecté avec le compte client <b>' + esc(S.auth.code) + '</b></span><button class="btn sec sm" onclick="logout()">Se déconnecter</button></div>';
   v.innerHTML = h;
+  var cl = document.getElementById('chat-l'); if (cl) cl.scrollTop = cl.scrollHeight;
+  if (msgUnread()) { msgMarkRead(); var bb = document.querySelector('#acc-btn .bub'); if (bb) bb.remove(); }
   var code = c.barcode || S.auth.code;
   bcLib().then(function(){ var el = document.getElementById('lc-svg'); if (el) try { JsBarcode(el, code, { format: 'CODE128', displayValue: false, height: 54, margin: 0, background: '#ffffff', lineColor: '#0e1a2b' }); } catch(e) {} }).catch(function(){});
 }
