@@ -499,6 +499,17 @@ dl.kv dd{font-weight:800;font-size:.93rem;margin-top:2px;overflow-wrap:anywhere;
 .tk-m dd{font-weight:700;font-size:.88rem;}
 @media (max-width:640px){.msg{max-width:90%;}.chat-f{flex-direction:column;}.chat-f .btn{align-self:stretch;}.tk-t th:nth-child(3),.tk-t td:nth-child(3){display:none;}}
 
+
+/* Paniers de réservation (un échange par panier) */
+.bk{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;margin-bottom:16px;box-shadow:var(--shadow);}
+.bk-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:linear-gradient(180deg,#f7f9fc,#fff);border-bottom:1px solid var(--line);}
+.bk-h b{font-family:var(--display);font-size:1.12rem;font-weight:800;display:block;}
+.bk-h b::first-letter{text-transform:uppercase;}
+.bk-h small{color:var(--ink-2);font-weight:600;font-size:.84rem;}
+.bk .rl{border:none;border-radius:0;}
+.bk .chat{border:none;border-top:1px solid var(--line);border-radius:0;}
+.bk .chat-l{max-height:300px;}
+
 /* ── Pied de page ── */
 footer{background:var(--navy);color:#c9d7ec;margin-top:auto;}
 .f-top{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:clamp(20px,3vw,40px);padding-top:clamp(30px,4vw,48px);padding-bottom:clamp(30px,4vw,48px);}
@@ -1250,12 +1261,21 @@ function resaWrite(items){
 }
 function newKey(){ return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 /* Ajoute (ou complète) une réservation — relit d'abord la liste en ligne pour ne rien écraser */
+function itemBk(i){ return i.bk || ('d' + new Date(+i.at || Date.now()).toISOString().slice(0, 10)); }
+/* Panier ouvert : le plus récent dont rien n'a encore été mis à disposition par le magasin */
+function openBk(items){
+  var srv = srvByKey(), byBk = {};
+  items.forEach(function(i){ var k = itemBk(i); (byBk[k] = byBk[k] || []).push(i); });
+  var ks = Object.keys(byBk).sort(function(a, b){ return Math.max.apply(null, byBk[b].map(function(i){ return +i.at || 0; })) - Math.max.apply(null, byBk[a].map(function(i){ return +i.at || 0; })); });
+  for (var n = 0; n < ks.length; n++) if (!byBk[ks[n]].some(function(i){ var s = srv[i.key]; return s && s.prepared; })) return ks[n];
+  return 'b' + Date.now().toString(36);
+}
 function resaAdd(p, qty, want){
   return fsGet('reservations/' + uid()).then(function(doc){
     var items = (doc && Array.isArray(doc.items)) ? doc.items.filter(function(i){ return i && i.key; }) : [];
-    var ex = items.filter(function(i){ return String(i.id) === String(p.id); })[0];
-    if (ex) { ex.qty = (+ex.qty || 1) + qty; ex.at = Date.now(); if (want) ex.want = want; }
-    else items.push({ key: newKey(), id: p.id, name: p.name, qty: qty, price: +p.price || 0, want: want || '', at: Date.now() });
+    var ex = items.filter(function(i){ return String(i.id) === String(p.id) && !(srvByKey()[i.key] || {}).prepared; })[0];
+    if (ex) { ex.qty = (+ex.qty || 1) + qty; ex.at = Date.now(); if (want) ex.want = want; if (!ex.bk) ex.bk = itemBk(ex); }
+    else items.push({ key: newKey(), id: p.id, name: p.name, qty: qty, price: +p.price || 0, want: want || '', at: Date.now(), bk: openBk(items) });
     return resaWrite(items);
   }).then(function(){ accRefresh(); });
 }
@@ -1300,26 +1320,26 @@ function msgAll(){
   var pend = (S.acc.outbox || []).filter(function(m){ return !ids[m.id]; }).map(function(m){ return { id: m.id, from: 'client', at: m.at, text: m.text, pending: true }; });
   return srv.concat(pend).sort(function(a, b){ return String(a.at).localeCompare(String(b.at)); });
 }
-function msgUnread(){ var s = msgSeen(); return msgAll().filter(function(m){ return m.from === 'shop' && String(m.at) > s; }).length; }
+function msgUnread(){ var s = msgSeen(); return msgAll().filter(function(m){ return m.from === 'shop' && m.bk && String(m.at) > s; }).length; }
 function msgNotify(first){
-  var s = msgSeen(), fresh = msgAll().filter(function(m){ return m.from === 'shop' && String(m.at) > s; });
+  var s = msgSeen(), fresh = msgAll().filter(function(m){ return m.from === 'shop' && m.bk && String(m.at) > s; });
   var last = fresh[fresh.length - 1];
   if (!first && last && last.id !== S.acc.lastToast) { S.acc.lastToast = last.id; toast('Message du magasin : ' + String(last.text).split('\n')[0].slice(0, 70)); }
   if (first && last) S.acc.lastToast = last.id;
 }
 function msgMarkRead(){ var m = msgAll().filter(function(x){ return x.from === 'shop'; }); if (m.length) try { localStorage.setItem(msgSeenKey(), String(m[m.length - 1].at)); } catch(e) {} }
-function msgSend(ev){
+function msgSend(ev, bk, bi){
   if (ev) ev.preventDefault();
-  var ta = document.getElementById('msg-in'), btn = document.getElementById('msg-btn'), txt = ta ? ta.value.trim() : '';
-  if (!txt) return false;
+  var ta = document.getElementById('msg-in-' + bi), btn = document.getElementById('msg-btn-' + bi), txt = ta ? ta.value.trim() : '';
+  if (!txt || !bk) return false;
   btn.disabled = true;
   fsGet('reservations/' + uid()).then(function(doc){
     var msgs = (doc && Array.isArray(doc.messages)) ? doc.messages.filter(function(m){ return m && m.id; }) : [];
-    msgs.push({ id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), from: 'client', at: new Date().toISOString(), text: txt.slice(0, 1000) });
+    msgs.push({ id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), from: 'client', at: new Date().toISOString(), text: txt.slice(0, 1000), bk: bk });
     msgs = msgs.slice(-50);
     var c = S.acc.client || {};
     return fsSet('reservations/' + uid(), { messages: msgs, clientName: c.name || '', barcode: c.barcode || '' }).then(function(){ S.acc.outbox = msgs; });
-  }).then(function(){ toast('Message envoyé au magasin'); S.acc.draft = ''; if (ta) { ta.value = ''; ta.blur(); } accRefresh(); })
+  }).then(function(){ toast('Message envoyé au magasin'); S.acc.drafts = S.acc.drafts || {}; delete S.acc.drafts[bk]; if (ta) { ta.value = ''; ta.blur(); } accRefresh(); })
     .catch(function(){ toast('Envoi impossible. Vérifiez votre connexion.'); btn.disabled = false; });
   return false;
 }
@@ -1336,7 +1356,13 @@ function accRefresh(){
       : ico('gift') + '<span class="tx">Se connecter</span>';
     b.setAttribute('aria-label', S.auth ? 'Mon compte fidélité' : 'Se connecter avec mon compte fidélité');
   }
-  if (S.route === '#/compte') { var ta = document.getElementById('msg-in'); if (ta) { S.acc.draft = ta.value; if (document.activeElement === ta) return; } S.route = ''; route(); }
+  if (S.route === '#/compte') {
+    S.acc.drafts = S.acc.drafts || {};
+    var tas = document.querySelectorAll('textarea[data-bk]'), typing = false;
+    Array.prototype.forEach.call(tas, function(ta){ S.acc.drafts[ta.dataset.bk] = ta.value; if (document.activeElement === ta) typing = true; });
+    if (typing) return;
+    S.route = ''; route();
+  }
   else if (S.curId) { var box = document.getElementById('pd-resa'); var p = productById(S.curId); if (box && p) box.innerHTML = resaBlockHTML(p); }
 }
 function initials(n){ return String(n || '?').trim().split(/\s+/).slice(0, 2).map(function(w){ return w.charAt(0).toUpperCase(); }).join(''); }
@@ -1433,35 +1459,43 @@ function viewAccount(){
     + '<div class="st"><span>Réservations</span><b>' + (S.acc.items.length + srvResa().filter(function(r){ return !r.portalKey; }).length) + '</b><small>' + readyCount() + ' prête' + (readyCount() > 1 ? 's' : '') + ' en magasin</small></div>'
     + '<div class="st"><span>Total de mes achats</span><b>' + eur(c.totalSpent || 0) + ' €</b><small>' + (c.updatedAt ? 'mis à jour ' + ago(Date.parse(c.updatedAt)) : '') + '</small></div>'
     + '</div></section>';
-  // Réservations
-  var online = S.acc.items.slice().sort(function(a,b){ return (b.at||0) - (a.at||0); });
-  var shop = srvResa().filter(function(r){ return !r.portalKey; });
-  h += '<section class="block">' + secT(ico('gift') + ' Mes réservations', online.length + shop.length, '#/tous', 'Réserver d\'autres articles');
-  if (!online.length && !shop.length) h += '<div class="empty">Aucune réservation pour le moment. Ouvrez un article puis touchez « Réserver cet article ».</div>';
-  else {
-    h += '<div class="rl">' + online.map(function(i){
+  // Paniers de réservation : chacun avec ses articles, son statut et son propre échange
+  var srvK = srvByKey(), bks = {}, order = [];
+  function bkGet(k){ if (!bks[k]) { bks[k] = { bk: k, online: [], shop: [], msgs: [], first: 0 }; order.push(k); } return bks[k]; }
+  S.acc.items.forEach(function(i){ var b = bkGet((srvK[i.key] && srvK[i.key].basketId) || itemBk(i)); b.online.push(i); var t0 = +i.at || 0; if (!b.first || (t0 && t0 < b.first)) b.first = t0; });
+  srvResa().filter(function(r){ return !r.portalKey; }).forEach(function(r){ var b = bkGet(r.basketId || ('d' + String(r.date || '').slice(0, 10))); b.shop.push(r); var t0 = Date.parse(r.date || '') || 0; if (!b.first || (t0 && t0 < b.first)) b.first = t0; });
+  msgAll().forEach(function(m){ if (m.bk && bks[m.bk]) bks[m.bk].msgs.push(m); });
+  var bkList = order.map(function(k){ return bks[k]; }).sort(function(a, b){ return (b.first || 0) - (a.first || 0); });
+  var nRes = S.acc.items.length + srvResa().filter(function(r){ return !r.portalKey; }).length;
+  var seen = msgSeen(); S.acc.drafts = S.acc.drafts || {};
+  h += '<section class="block" id="msgs">' + secT(ico('gift') + ' Mes paniers réservés', bkList.length || null, '#/tous', 'Réserver d\'autres articles');
+  if (!bkList.length) h += '<div class="empty">Aucune réservation pour le moment. Ouvrez un article puis touchez « Réserver cet article ». Chaque panier réservé a son propre échange avec le magasin.</div>';
+  bkList.forEach(function(b, bi){
+    var all = b.online.map(function(i){ return { s: resaStatus(i) }; }).concat(b.shop.map(function(r){ return { s: r.prepared ? { c: 'ok' } : (r.status === 'ready' ? { c: 'av' } : { c: 'wait' }) }; }));
+    var nOk = all.filter(function(x){ return x.s.c === 'ok'; }).length;
+    var head = nOk === all.length ? '<span class="chip ok"><i></i>Panier prêt</span>' : (nOk ? '<span class="chip av"><i></i>' + nOk + ' sur ' + all.length + ' prêt' + (nOk > 1 ? 's' : '') + '</span>' : '<span class="chip sent"><i></i>En cours</span>');
+    var d0 = b.first ? new Date(b.first) : null;
+    h += '<div class="bk"><div class="bk-h"><div><b>Panier du ' + (d0 ? d0.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : '—') + '</b><small>' + plural(all.length, 'article') + '</small></div>' + head + '</div>';
+    h += '<div class="rl">' + b.online.map(function(i){
       var p = productById(i.id), st = resaStatus(i);
       return '<div class="ri">' + (p ? '<a class="ri-im" href="#/article/' + enc(p.id) + '">' + imgHTML(p) + '</a>' : '<span class="ri-im"><span class="ph"></span></span>')
         + '<div class="ri-tx"><b>' + esc((p && p.name) || i.name || 'Article') + '</b><span>×' + (+i.qty || 1) + ' · ' + eur((+i.qty || 1) * (+((p && p.price) || i.price) || 0)) + ' €' + (i.want ? ' · retrait ' + wantTxt(i.want) : '') + '</span>'
         + '<span class="chip ' + st.c + '"><i></i>' + st.t + '</span></div>'
         + '<button class="ri-x" onclick="resaCancel(\'' + esc(i.key) + '\')" aria-label="Annuler cette réservation">Annuler</button></div>';
-    }).join('') + shop.map(function(r){
+    }).join('') + b.shop.map(function(r){
       var p = r.productId != null ? productById(r.productId) : null;
       return '<div class="ri">' + (p ? '<a class="ri-im" href="#/article/' + enc(p.id) + '">' + imgHTML(p) + '</a>' : '<span class="ri-im"><span class="ph"></span></span>')
         + '<div class="ri-tx"><b>' + esc(r.name || (p && p.name) || 'Article') + '</b><span>×' + (+r.qty || 1) + ' · réservée en boutique' + (r.pickupDate ? ' · retrait ' + wantTxt(r.pickupDate) : '') + '</span>'
-        + '<span class="chip ' + (r.status === 'ready' ? 'ok' : 'wait') + '"><i></i>' + (r.status === 'ready' ? 'Prête en magasin' : 'En attente de stock') + '</span></div></div>';
+        + '<span class="chip ' + (r.prepared ? 'ok' : (r.status === 'ready' ? 'av' : 'wait')) + '"><i></i>' + (r.prepared ? 'Panier prêt · ' + esc(r.preparedBy || 'magasin') : (r.status === 'ready' ? 'Disponible · en préparation' : 'En attente de stock')) + '</span></div></div>';
     }).join('') + '</div>';
-  }
+    h += '<div class="chat"><div class="chat-l">' + (b.msgs.length ? b.msgs.slice(-30).map(function(m){
+        var me = m.from === 'client', d = new Date(m.at), isNew = !me && String(m.at) > seen;
+        return '<div class="msg ' + (me ? 'me' : 'shop') + (isNew ? ' new' : '') + '"><div class="mb">' + esc(m.text).replace(/\n/g, '<br>') + '</div>'
+          + '<div class="mm">' + (me ? 'Vous' + (m.pending ? ' · envoyé, en attente de lecture' : '') : esc(m.by || 'Le magasin') + (m.byId ? ' · ID caissier ' + esc(m.byId) : '')) + (isNaN(d) ? '' : ' · ' + d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })) + (isNew ? ' · <b>nouveau</b>' : '') + '</div></div>';
+      }).join('') : '<div class="chat-e">Une question sur ce panier ? Écrivez au magasin ici. Il vous préviendra aussi ici dès que le panier sera prêt.</div>')
+      + '</div><form class="chat-f" onsubmit="return msgSend(event,\'' + esc(b.bk) + '\',' + bi + ')"><textarea id="msg-in-' + bi + '" data-bk="' + esc(b.bk) + '" rows="2" maxlength="1000" placeholder="Écrire au magasin à propos de ce panier…" aria-label="Message au magasin pour ce panier">' + esc(S.acc.drafts[b.bk] || '') + '</textarea><button class="btn pri" id="msg-btn-' + bi + '" type="submit">Envoyer</button></form></div></div>';
+  });
   h += '</section>';
-  // Échanges avec le magasin
-  var seen = msgSeen(), msgs = msgAll().slice(-40);
-  h += '<section class="block" id="msgs">' + secT(ico('chat') + ' Échanges avec le magasin', msgs.length || null);
-  h += '<div class="chat"><div class="chat-l" id="chat-l">' + (msgs.length ? msgs.map(function(m){
-      var me = m.from === 'client', d = new Date(m.at), isNew = !me && String(m.at) > seen;
-      return '<div class="msg ' + (me ? 'me' : 'shop') + (isNew ? ' new' : '') + '"><div class="mb">' + esc(m.text).replace(/\n/g, '<br>') + '</div>'
-        + '<div class="mm">' + (me ? 'Vous' + (m.pending ? ' · envoyé, en attente de lecture' : '') : esc(m.by || 'Le magasin') + (m.byId ? ' · ID caissier ' + esc(m.byId) : '')) + (isNaN(d) ? '' : ' · ' + d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })) + (isNew ? ' · <b>nouveau</b>' : '') + '</div></div>';
-    }).join('') : '<div class="chat-e">Aucun message. Le magasin vous écrit ici quand votre panier est prêt ; vous pouvez aussi lui poser une question.</div>')
-    + '</div><form class="chat-f" onsubmit="return msgSend(event)"><textarea id="msg-in" rows="2" maxlength="1000" placeholder="Écrire au magasin…" aria-label="Votre message">' + esc(S.acc.draft || '') + '</textarea><button class="btn pri" id="msg-btn" type="submit">Envoyer</button></form></div></section>';
   // Échéances
   var ech = c.echeances || [];
   if (ech.length) h += '<section class="block">' + secT('Échéances à venir', ech.length) + '<div class="rl">' + ech.map(function(e){ var d = histDate(e.due); return '<div class="ri ech"><div class="ri-tx"><b>' + (d ? d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Date à définir') + '</b></div><b class="amt">' + eur(e.amount) + ' €</b></div>'; }).join('') + '</div></section>';
@@ -1496,7 +1530,7 @@ function viewAccount(){
   }
   h += '</section><div class="acc-foot"><span>Connecté avec le compte client <b>' + esc(S.auth.code) + '</b></span><button class="btn sec sm" onclick="logout()">Se déconnecter</button></div>';
   v.innerHTML = h;
-  var cl = document.getElementById('chat-l'); if (cl) cl.scrollTop = cl.scrollHeight;
+  Array.prototype.forEach.call(document.querySelectorAll('.bk .chat-l'), function(cl){ cl.scrollTop = cl.scrollHeight; });
   if (msgUnread()) { msgMarkRead(); var bb = document.querySelector('#acc-btn .bub'); if (bb) bb.remove(); }
   var code = c.barcode || S.auth.code;
   bcLib().then(function(){ var el = document.getElementById('lc-svg'); if (el) try { JsBarcode(el, code, { format: 'CODE128', displayValue: false, height: 54, margin: 0, background: '#ffffff', lineColor: '#0e1a2b' }); } catch(e) {} }).catch(function(){});
