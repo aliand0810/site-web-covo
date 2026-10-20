@@ -595,6 +595,16 @@ footer{background:var(--navy);color:#c9d7ec;margin-top:auto;}
 .view-in{animation:vin .25s ease;}
 @keyframes vin{from{opacity:0;}}
 
+/* ── Images produits : toujours contenues dans leur cadre, quel que soit le format importé (portrait, paysage, grande taille) ── */
+.feat .pic .box,.card .im,.pd-media,.rs-im,.ri-im{position:relative;overflow:hidden;min-height:0;min-width:0;}
+.feat .pic .box img,.card .im img,.pd-media img,.rs-im img,.ri-im img{position:absolute;inset:0;margin:auto;max-width:none;object-fit:contain;object-position:center;}
+.card .im img{width:84%;height:84%;}
+.feat .pic .box img{width:86%;height:86%;}
+.pd-media img{width:82%;height:82%;}
+.rs-im img{width:88%;height:88%;}
+.ri-im img{width:86%;height:86%;}
+.card .im{flex:0 0 auto;}
+.bdg,.c-acts,.card .im .fav{z-index:2;}
 /* ── Adaptation à l'appareil ── */
 @media (max-width:1100px){
   .hero{grid-template-columns:minmax(0,1fr);}
