@@ -605,6 +605,7 @@ footer{background:var(--navy);color:#c9d7ec;margin-top:auto;}
 .ri-im img{width:86%;height:86%;}
 .card .im{flex:0 0 auto;}
 .bdg,.c-acts,.card .im .fav{z-index:2;}
+.f-priv{flex-basis:100%;order:3;font-size:.72rem;opacity:.65;line-height:1.45;}
 /* ── Adaptation à l'appareil ── */
 @media (max-width:1100px){
   .hero{grid-template-columns:minmax(0,1fr);}
@@ -763,6 +764,7 @@ footer{background:var(--navy);color:#c9d7ec;margin-top:auto;}
   </div>
   <div class="f-bot"><div class="wrap">
     <div class="f-upd" id="live"><i></i><span id="live-txt">Connexion au catalogue…</span></div>
+    <span class="f-priv">Ce site enregistre l'adresse IP, l'appareil et les pages consultées pour suivre sa fréquentation. Ces données sont conservées 13 mois maximum et ne sont vues que par le magasin.</span>
     <span id="ft-copy">© COVO</span>
   </div></div>
 </footer>
@@ -1321,6 +1323,7 @@ function loginSubmit(ev){
       var m = (j.error && j.error.message) || '';
       throw new Error(/TOO_MANY/.test(m) ? 'Trop de tentatives. Réessayez dans quelques minutes.' : 'Code client ou mot de passe incorrect.');
     }
+    setTimeout(function(){ window._visitClient && window._visitClient(); }, 0);
     authSave({ code: code.toUpperCase(), uid: j.localId, rt: j.refreshToken, it: j.idToken, exp: Date.now() + ((+j.expiresIn || 3600) - 300) * 1000 });
     document.getElementById('lg-pass').value = '';
     loginClose();
@@ -1335,7 +1338,7 @@ function loginSubmit(ev){
   }).then(function(){ btn.disabled = false; btn.textContent = 'Se connecter'; });
   return false;
 }
-function logout(){ authSave(null); S.bc = null; S.bcErr = ''; S.pr = null; S.acc = { client: null, items: [], loaded: false, busy: false, err: '' }; authUI(); accRefresh(); if (S.route === '#/compte') { S.route = ''; route(); } toast('Déconnecté'); }
+function logout(){ setTimeout(function(){ window._visitClient && window._visitClient(); }, 0); authSave(null); S.bc = null; S.bcErr = ''; S.pr = null; S.acc = { client: null, items: [], loaded: false, busy: false, err: '' }; authUI(); accRefresh(); if (S.route === '#/compte') { S.route = ''; route(); } toast('Déconnecté'); }
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') loginClose(); });
 /* Bloc code-barres de la page article */
 function bcBlockHTML(p){
@@ -2122,6 +2125,82 @@ function paint(){
   new MutationObserver(function(){ tabSync(); }).observe(document.getElementById('acc-btn'), { childList: true, subtree: true });
   new MutationObserver(function(){ tabSync(); }).observe(document.getElementById('view'), { childList: true });
   measure(); setTimeout(measure, 800); tabSync();
+})();
+</script>
+<script>
+/* ═══ SUIVI DES VISITES — une fiche par visite dans Firestore (visits/{id}) :
+   adresse IP, lieu approximatif, appareil, pages consultées, client fidélité connecté.
+   Lecture réservée au magasin (COVO Pro → Catalogue → Site web → Visites). ═══ */
+(function(){
+  var URL = 'https://firestore.googleapis.com/v1/projects/' + CFG.projectId + '/databases/(default)/documents/visits';
+  var KEY = 'covo_vid', id, doc = null, pages = [], dirty = false, timer = 0, ready = null;
+  function rid(){ var a = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', r = ''; var b = new Uint8Array(20); (crypto || window.msCrypto).getRandomValues(b); for (var i = 0; i < 20; i++) r += a[b[i] % 62]; return r; }
+  function str(v){ return { stringValue: String(v == null ? '' : v).slice(0, 300) }; }
+  function device(){
+    var u = navigator.userAgent || '', t = /iPad|Tablet|(Android(?!.*Mobile))/i.test(u) ? 'Tablette' : /Mobi|iPhone|Android/i.test(u) ? 'Mobile' : 'Ordinateur';
+    var os = /iPhone|iPad|iPod/.test(u) ? 'iOS' : /Android/.test(u) ? 'Android' : /Windows/.test(u) ? 'Windows' : /Mac OS X/.test(u) ? 'macOS' : /Linux/.test(u) ? 'Linux' : 'Autre';
+    var br = /Edg\//.test(u) ? 'Edge' : /OPR\//.test(u) ? 'Opera' : /SamsungBrowser/.test(u) ? 'Samsung' : /Firefox\//.test(u) ? 'Firefox' : /Chrome\//.test(u) ? 'Chrome' : /Safari\//.test(u) ? 'Safari' : 'Autre';
+    return t + ' · ' + os + ' · ' + br;
+  }
+  function page(){
+    var h = location.hash || '#/', m;
+    if ((m = /^#\/article\/(.+)$/.exec(h))) { var id2 = decodeURIComponent(m[1]), p = (typeof all === 'function' ? all() : []).filter(function(x){ return String(x.id) === id2; })[0]; return 'Article : ' + (p ? p.name : id2); }
+    if ((m = /^#\/rayon\/(.+)$/.exec(h))) return 'Rayon : ' + decodeURIComponent(m[1]);
+    if ((m = /^#\/recherche\/(.*)$/.exec(h))) return 'Recherche : ' + decodeURIComponent(m[1]);
+    return { '#/': 'Accueil', '#/promotions': 'Promotions', '#/nouveautes': 'Nouvel arrivage', '#/tous': 'Tous les articles', '#/compte': 'Mon compte' }[h] || h;
+  }
+  function client(){ return (S && S.auth && S.auth.code) || ''; }
+  function ipInfo(){
+    function t(u){ return Promise.race([fetch(u, { cache: 'no-store' }).then(function(r){ return r.json(); }), new Promise(function(_, j){ setTimeout(function(){ j(new Error('timeout')); }, 5000); })]); }
+    return t('https://ipwho.is/?fields=ip,success,city,region,country,connection').then(function(j){
+      if (!j || !j.ip) throw new Error('ipwho');
+      return { ip: j.ip, city: [j.city, j.region].filter(Boolean).join(', '), country: j.country || '', isp: (j.connection && (j.connection.isp || j.connection.org)) || '' };
+    }).catch(function(){
+      return t('https://api64.ipify.org?format=json').then(function(j){ return { ip: j.ip || 'inconnue', city: '', country: '', isp: '' }; });
+    }).catch(function(){ return { ip: 'inconnue', city: '', country: '', isp: '' }; });
+  }
+  function start(){
+    try { id = sessionStorage.getItem(KEY); } catch(e) {}
+    var isNew = !id;
+    if (isNew) { id = rid(); try { sessionStorage.setItem(KEY, id); } catch(e) {} }
+    try { pages = JSON.parse(sessionStorage.getItem(KEY + '_p') || '[]'); } catch(e) { pages = []; }
+    if (!isNew) { ready = Promise.resolve(true); track(); return; }
+    var now = new Date().toISOString();
+    ready = ipInfo().then(function(ip){
+      pages = [now.slice(11, 19) + ' ' + page()];
+      try { sessionStorage.setItem(KEY + '_p', JSON.stringify(pages)); } catch(e) {}
+      return fetch(URL + '?documentId=' + id, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fields: {
+        ip: str(ip.ip), city: str(ip.city), country: str(ip.country), isp: str(ip.isp),
+        at: { timestampValue: now }, last: { timestampValue: now },
+        ua: str(navigator.userAgent), dev: str(device()), scr: str(screen.width + '×' + screen.height),
+        lang: str(navigator.language || ''), ref: str(document.referrer ? document.referrer.replace(/^https?:\/\//, '').split('/')[0] : ''),
+        pages: { arrayValue: { values: pages.map(str) } }, n: { integerValue: String(pages.length) }, client: str(client())
+      } }) }).then(function(r){ return r.ok; });
+    }).catch(function(){ return false; });
+  }
+  function track(){
+    var p = page(), last = pages.length ? pages[pages.length - 1].slice(9) : '';
+    if (p !== last) { pages.push(new Date().toISOString().slice(11, 19) + ' ' + p); if (pages.length > 60) pages = pages.slice(-60); dirty = true; }
+    try { sessionStorage.setItem(KEY + '_p', JSON.stringify(pages)); } catch(e) {}
+    clearTimeout(timer); timer = setTimeout(flush, 2500);
+  }
+  function flush(force){
+    if (!ready) return;
+    ready.then(function(ok){
+      if (!ok || (!dirty && !force)) return;
+      dirty = false;
+      var now = new Date().toISOString();
+      fetch(URL + '/' + id + '?updateMask.fieldPaths=pages&updateMask.fieldPaths=last&updateMask.fieldPaths=n&updateMask.fieldPaths=client&currentDocument.exists=true', {
+        method: 'PATCH', keepalive: true, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields: { pages: { arrayValue: { values: pages.map(str) } }, last: { timestampValue: now }, n: { integerValue: String(pages.length) }, client: str(client()) } })
+      }).catch(function(){});
+    });
+  }
+  window._visitClient = function(){ dirty = true; track(); };
+  addEventListener('hashchange', function(){ setTimeout(track, 300); });
+  addEventListener('pagehide', function(){ flush(true); });
+  document.addEventListener('visibilitychange', function(){ if (document.hidden) flush(true); });
+  start();
 })();
 </script>
 </body>
