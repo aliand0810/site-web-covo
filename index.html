@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<script>/* Aperçu depuis COVO Pro (?apercu=1 ou page intégrée) : pas d’animation d’accueil, pas de visite enregistrée */try{if(/[?&]apercu=1/.test(location.search)||window.top!==window.self)document.documentElement.classList.add('apercu');}catch(e){document.documentElement.classList.add('apercu');}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>COVO — Plus qu’un magasin, une expérience</title>
 <meta name="description" content="Le catalogue COVO : tous les rayons, les prix et les promotions du magasin, mis à jour en direct depuis la caisse.">
@@ -1712,7 +1713,7 @@ function viewAccount(){
    Un toucher / clic la passe. ═══ */
 function covoIntro(opts){
   opts = opts || {};
-  if (document.getElementById('intro')) return;
+  if (document.getElementById('intro') || document.documentElement.classList.contains('apercu')) return;
   var logo = (document.querySelector('.brand img') || {}).src || '';
   var el = document.createElement('div'); el.id = 'intro'; el.className = 'intro'; el.setAttribute('role', 'img');
   el.setAttribute('aria-label', 'COVO — Plus qu’un magasin, une expérience');
@@ -2132,6 +2133,7 @@ function paint(){
    adresse IP, lieu approximatif, appareil, pages consultées, client fidélité connecté.
    Lecture réservée au magasin (COVO Pro → Catalogue → Site web → Visites). ═══ */
 (function(){
+  if (document.documentElement.classList.contains('apercu')) { try { parent.postMessage({ covoApercu: 1, hash: location.hash }, '*'); addEventListener('hashchange', function(){ parent.postMessage({ covoApercu: 1, hash: location.hash }, '*'); }); } catch(e) {} return; }
   var URL = 'https://firestore.googleapis.com/v1/projects/' + CFG.projectId + '/databases/(default)/documents/visits';
   var KEY = 'covo_vid', id, doc = null, pages = [], dirty = false, timer = 0, ready = null;
   function rid(){ var a = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', r = ''; var b = new Uint8Array(20); (crypto || window.msCrypto).getRandomValues(b); for (var i = 0; i < 20; i++) r += a[b[i] % 62]; return r; }
