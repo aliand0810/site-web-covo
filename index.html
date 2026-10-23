@@ -2496,17 +2496,26 @@ function savSubmit(ev){
     client: (S.auth && S.auth.code) || x.code.toUpperCase(), uid: (S.auth && S.auth.uid) || '', photos: S.sav.photos.slice(0, 3) };
   var fields = {}; Object.keys(rec).forEach(function(k2){ fields[k2] = k2 === 'at' ? { timestampValue: rec.at } : fsEnc(rec[k2]); });
   btn.disabled = true; btn.textContent = 'Envoi en cours…';
-  (S.auth ? authToken().catch(function(){ return null; }) : Promise.resolve(null)).then(function(t){
-    if (!t) { rec.uid = ''; fields.uid = fsEnc(''); }
+  function post(t){
     var hd = { 'Content-Type': 'application/json' }; if (t) hd.Authorization = 'Bearer ' + t;
     return fetch(FS_DOCS + 'sav?documentId=' + ref, { method: 'POST', headers: hd, body: JSON.stringify({ fields: fields }) });
+  }
+  (S.auth ? authToken().catch(function(){ return null; }) : Promise.resolve(null)).then(function(t){
+    if (!t) { rec.uid = ''; fields.uid = fsEnc(''); }
+    return post(t).then(function(r){
+      if (r.ok || !t || r.status === 409) return r;
+      // Envoi depuis le compte refusé : la demande repart sans lien de compte (le code client reste joint)
+      console.warn('[SAV] envoi avec le compte refusé (' + r.status + '), nouvel essai sans compte');
+      rec.uid = ''; fields.uid = fsEnc(''); return post(null);
+    });
   }).then(function(r){
     if (!r.ok) throw new Error(r.status === 403 ? 'refus' : 'HTTP ' + r.status);
     S.sav.sent = rec; S.sav.photos = []; S.sav.pre = null; S.sav.mine = null;
     try { var l = JSON.parse(localStorage.getItem('covo_sav_refs') || '[]'); l.unshift(ref); localStorage.setItem('covo_sav_refs', JSON.stringify(l.slice(0, 20))); } catch(e) {}
     viewSav(); window.scrollTo({ top: 0, behavior: 'smooth' });
   }).catch(function(e){
-    err.textContent = /refus/.test(e.message) ? 'Le service client en ligne n\'est pas encore activé. Contactez-nous par téléphone ou WhatsApp.' : 'L\'envoi a échoué : vérifiez votre connexion internet puis réessayez.';
+    console.warn('[SAV] envoi impossible', e);
+    err.textContent = /refus/.test(e.message) ? 'Le service client en ligne n\'est pas encore activé. Contactez-nous par téléphone ou WhatsApp.' : /HTTP/.test(e.message) ? 'L\'envoi a été refusé (' + e.message.replace('HTTP ', 'code ') + '). Réessayez ou contactez-nous par téléphone ou WhatsApp.' : 'L\'envoi a échoué : vérifiez votre connexion internet puis réessayez.';
     btn.disabled = false; btn.textContent = 'Envoyer ma demande';
   });
   return false;
@@ -2545,7 +2554,12 @@ function savMineHTML(list){
 function savMineFill(){
   var box = document.getElementById('acc-sav'); if (!box) return;
   if (S.sav.mine) box.innerHTML = savMineHTML(S.sav.mine);
-  savMineLoad().then(function(l){ S.sav.mine = l; var b = document.getElementById('acc-sav'); if (b) b.innerHTML = savMineHTML(l); }).catch(function(){ var b = document.getElementById('acc-sav'); if (b && !S.sav.mine) b.innerHTML = ''; });
+  savMineLoad().then(function(l){ S.sav.mine = l; var b = document.getElementById('acc-sav'); if (b) b.innerHTML = savMineHTML(l); }).catch(function(e){
+    console.warn('[SAV] liste des demandes', e);
+    var b = document.getElementById('acc-sav'); if (!b || S.sav.mine) return;
+    var refs = []; try { refs = JSON.parse(localStorage.getItem('covo_sav_refs') || '[]'); } catch(x) {}
+    b.innerHTML = secT('Mes demandes au service client', refs.length || '') + '<div class="empty">Le suivi en ligne de vos demandes est momentanément indisponible.' + (refs.length ? ' Vos numéros de demande : <b>' + refs.slice(0, 5).map(esc).join(', ') + '</b>.' : '') + ' <a href="#/service-client">Contacter le service client</a></div>';
+  });
 }
 </script>
 </body>
