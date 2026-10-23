@@ -2,7 +2,6 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<script>/* Aperçu depuis COVO Pro (?apercu=1 ou page intégrée) : pas d’animation d’accueil, pas de visite enregistrée */try{if(/[?&]apercu=1/.test(location.search)||window.top!==window.self)document.documentElement.classList.add('apercu');}catch(e){document.documentElement.classList.add('apercu');}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>COVO — Plus qu’un magasin, une expérience</title>
 <meta name="description" content="Le catalogue COVO : tous les rayons, les prix et les promotions du magasin, mis à jour en direct depuis la caisse.">
@@ -651,6 +650,122 @@ footer{background:var(--navy);color:#c9d7ec;margin-top:auto;}
   .tools{width:100%;}
   .tools select{flex:1;}
 }
+/* ── Service client / SAV ── */
+.sav-top{margin:-4px 0 6px;}
+.sav-back{display:inline-flex;align-items:center;gap:6px;color:var(--blue);font-weight:700;font-size:.88rem;text-decoration:none;}
+.sav-back span{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:1.6px solid currentColor;border-radius:50%;font-size:.95rem;line-height:1;}
+.sav-h1{font-family:var(--display);font-size:clamp(1.5rem,2.6vw,2.1rem);font-weight:800;line-height:1.1;letter-spacing:-.015em;margin:4px 0 18px;}
+.sav-lay{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:clamp(16px,2.4vw,28px);align-items:start;margin-bottom:clamp(30px,4vw,48px);}
+.sav-main{display:flex;flex-direction:column;gap:16px;min-width:0;}
+.sav-card{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;}
+.sav-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:18px 22px;border-bottom:1px solid var(--line);}
+.sav-hd h2{font-family:var(--display);font-size:1.25rem;font-weight:800;}
+.sav-hd span{font-size:.8rem;font-weight:700;color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,#fff);padding:4px 10px;border-radius:999px;}
+#sav-fields{padding:6px 22px 22px;}
+.sav-row{display:flex;flex-direction:column;gap:6px;margin-top:16px;min-width:0;}
+.sav-row label,.sav-lb{font-size:.84rem;font-weight:700;color:var(--ink);}
+.sav-row i{font-style:normal;font-weight:600;color:var(--ink-3);font-size:.78rem;}
+.sav-motif{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);align-items:center;gap:14px;margin:0;padding:20px 22px;border-bottom:1px solid var(--line);}
+.sav-sel{position:relative;}
+.sav-sel::after{content:"";position:absolute;right:16px;top:50%;width:8px;height:8px;border-right:2px solid var(--blue);border-bottom:2px solid var(--blue);transform:translateY(-70%) rotate(45deg);pointer-events:none;}
+.sav-sel select{width:100%;height:48px;border:1.5px solid var(--blue);border-radius:8px;padding:0 42px 0 14px;background:#fff;color:var(--blue);font:inherit;font-weight:700;font-size:.92rem;appearance:none;-webkit-appearance:none;cursor:pointer;}
+.sav-sel select:focus{outline:3px solid color-mix(in srgb,var(--blue) 25%,transparent);outline-offset:1px;}
+.sav-card input:not([type=radio]):not([type=checkbox]),.sav-card textarea,.sav-card select:not(#sav-m){width:100%;min-height:46px;border:1.5px solid var(--line-2);border-radius:10px;padding:10px 14px;font:inherit;font-size:1rem;color:var(--ink);background:#fff;outline:none;}
+.sav-card input:not([type=radio]):not([type=checkbox]),.sav-card select:not(#sav-m){height:46px;}
+.sav-g2{align-items:start;}
+.sav-g2 .sav-row{justify-content:flex-start;}
+.sav-card textarea{resize:vertical;min-height:120px;line-height:1.5;}
+.sav-card input:focus,.sav-card textarea:focus,.sav-card select:focus{border-color:var(--blue);}
+.sav-card .bad{border-color:var(--promo) !important;box-shadow:0 0 0 3px color-mix(in srgb,var(--promo) 15%,transparent);}
+.sav-cnt{align-self:flex-end;font-size:.74rem;color:var(--ink-3);}
+.sav-g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;}
+.sav-fs{border:none;margin:18px 0 0;padding:16px 0 0;border-top:1px dashed var(--line-2);min-width:0;}
+.sav-fs legend{font-family:var(--display);font-weight:800;font-size:1rem;padding:0 8px 0 0;}
+.sav-fs .sav-row:first-of-type{margin-top:8px;}
+.sav-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.sav-chips label{cursor:pointer;}
+.sav-chips input{position:absolute;opacity:0;pointer-events:none;}
+.sav-chips span{display:inline-flex;align-items:center;height:40px;padding:0 15px;border-radius:999px;border:1.5px solid var(--line-2);font-size:.88rem;font-weight:700;color:var(--ink-2);background:#fff;transition:all .15s;}
+.sav-chips input:checked+span{border-color:var(--blue);background:var(--blue-50);color:var(--blue);}
+.sav-chips input:focus-visible+span{outline:3px solid color-mix(in srgb,var(--blue) 30%,transparent);}
+.sav-ph{display:flex;flex-wrap:wrap;gap:10px;}
+.sav-ph:empty{display:none;}
+.sav-ph span{position:relative;width:92px;height:92px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#fff;}
+.sav-ph img{width:100%;height:100%;object-fit:cover;}
+.sav-ph button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:none;background:rgba(14,26,43,.75);color:#fff;font-size:.72rem;cursor:pointer;}
+.sav-add{align-self:flex-start;cursor:pointer;}
+.sav-note{font-size:.76rem;color:var(--ink-3);}
+.sav-cl{display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--blue-50);font-size:.84rem;color:var(--ink);}
+.sav-cl .i3{font-size:1.1rem;}
+.sav-ok{display:flex;gap:10px;align-items:flex-start;margin-top:18px;font-size:.8rem;color:var(--ink-2);line-height:1.45;cursor:pointer;}
+.sav-ok input{width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:var(--blue);}
+.sav-ok input.bad{outline:2px solid var(--promo);outline-offset:2px;}
+.sav-err{color:var(--promo);font-weight:700;font-size:.86rem;margin-top:12px;min-height:1px;}
+.sav-err:empty{margin:0;}
+.sav-act{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;}
+.sav-empty{display:flex;align-items:center;gap:14px;padding:22px 4px 8px;color:var(--ink-2);font-size:.92rem;}
+.sav-empty .i3{font-size:2rem;flex-shrink:0;}
+.sav-help{display:flex;align-items:center;gap:16px;padding:18px 22px;border-radius:var(--r-lg);background:#e9eef6;}
+.sav-help>.i3{font-size:2.4rem;flex-shrink:0;}
+.sav-help b{display:block;font-family:var(--display);font-size:1.1rem;font-weight:800;margin-bottom:2px;}
+.sav-help span{font-size:.88rem;color:var(--ink-2);}
+.sav-side{display:flex;flex-direction:column;gap:14px;position:sticky;top:140px;}
+.sav-box{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;}
+.sav-box h3{font-family:var(--display);font-size:1.02rem;font-weight:800;margin-bottom:10px;}
+.sav-box p{font-size:.86rem;color:var(--ink-2);margin-bottom:12px;}
+.sav-ch{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);color:var(--ink);text-decoration:none;}
+.sav-ch:first-of-type{border-top:none;}
+.sav-ch .i3{font-size:1.45rem;flex-shrink:0;}
+.sav-ch b{display:block;font-size:.9rem;overflow-wrap:anywhere;}
+.sav-ch small{font-size:.76rem;color:var(--ink-2);}
+a.sav-ch:hover b{color:var(--blue);}
+.sav-done{padding:clamp(24px,4vw,40px);text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.sav-ok-ic{width:64px;height:64px;border-radius:50%;background:var(--ok);color:#fff;font-size:2rem;font-weight:800;display:flex;align-items:center;justify-content:center;animation:savpop .5s cubic-bezier(.2,1.4,.4,1);}
+@keyframes savpop{from{transform:scale(.4);opacity:0;}}
+.sav-done h2{font-family:var(--display);font-size:1.5rem;font-weight:800;}
+.sav-done p{color:var(--ink-2);max-width:440px;}
+.sav-ref{font-family:var(--display);font-size:1.6rem;font-weight:800;letter-spacing:.04em;color:var(--blue);background:var(--blue-50);border:1.5px dashed var(--blue-100);border-radius:12px;padding:8px 18px;}
+.sav-sum{display:grid;gap:6px;text-align:left;width:min(100%,460px);margin-top:6px;font-size:.88rem;}
+.sav-sum div{display:grid;grid-template-columns:90px 1fr;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);}
+.sav-sum dt{color:var(--ink-2);font-weight:700;}
+.sav-done .sav-act{justify-content:center;}
+.pd-sav{display:inline-block;margin-top:12px;font-size:.84rem;font-weight:700;color:var(--blue);}
+.tk-sav{display:inline-block;margin-top:10px;font-size:.82rem;font-weight:700;color:var(--blue);}
+.u-sav{font-weight:700;}
+.f-sav{display:inline-block;margin-top:10px;font-weight:800;color:#fff;}
+.sav-mine{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;}
+.sav-it+.sav-it{border-top:1px solid var(--line);}
+.sav-it>summary{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;list-style:none;}
+.sav-it>summary::-webkit-details-marker{display:none;}
+.sav-it .chev{width:8px;height:8px;border-right:2.2px solid var(--ink-2);border-bottom:2.2px solid var(--ink-2);transform:rotate(45deg);flex-shrink:0;transition:transform .2s;}
+.sav-it[open] .chev{transform:rotate(-135deg);}
+.sav-it-t{flex:1;min-width:0;}
+.sav-it-t b{display:block;font-size:.92rem;}
+.sav-it-t small{font-size:.76rem;color:var(--ink-2);}
+.sav-st{flex-shrink:0;font-size:.72rem;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--blue-50);color:var(--blue);}
+.sav-st.c{background:#fff4e5;color:#a1520f;}
+.sav-st.a{background:#fdecec;color:var(--promo);}
+.sav-st.r{background:color-mix(in srgb,var(--ok) 12%,#fff);color:var(--ok);}
+.sav-st.x{background:var(--page);color:var(--ink-2);}
+.sav-th{padding:4px 16px 16px;display:flex;flex-direction:column;gap:10px;}
+.sav-th .msg small{font-size:.72rem;color:var(--ink-3);}
+.sav-th .mb{white-space:pre-wrap;}
+.sav-wait{font-size:.82rem;color:var(--ink-2);font-style:italic;}
+.sav-more{font-size:.82rem;font-weight:700;color:var(--blue);align-self:flex-start;}
+@media (max-width:900px){
+  .sav-lay{grid-template-columns:minmax(0,1fr);}
+  .sav-side{position:static;}
+}
+@media (max-width:640px){
+  .sav-motif{grid-template-columns:minmax(0,1fr);gap:8px;padding:16px;}
+  .sav-hd{padding:14px 16px;}
+  #sav-fields{padding:4px 16px 18px;}
+  .sav-g2{grid-template-columns:minmax(0,1fr);}
+  .sav-help{padding:16px;gap:12px;}
+  .sav-help>.i3{font-size:1.9rem;}
+  .sav-act .btn{flex:1 1 100%;}
+  .sav-sel select{font-size:16px;}
+}
 /* ── Smartphone : navigation au pouce (barre d'onglets, en-tête qui se replie, carrousels) ── */
 .tabbar,.sheet-ov{display:none;}
 @media (max-width:640px){
@@ -759,7 +874,7 @@ footer{background:var(--navy);color:#c9d7ec;margin-top:auto;}
       <div class="f-brand"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImxnUmluZyIgeDE9IjAuMTUiIHkxPSIwLjA1IiB4Mj0iMC44NSIgeTI9IjAuOTUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMzZjgyZTAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIwLjQ1IiBzdG9wLWNvbG9yPSIjMjU2MGJmIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzE2NDI4YSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0ibGdEaXNjIiBjeD0iMC40MiIgY3k9IjAuMzgiIHI9IjAuNyI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjAuNyIgc3RvcC1jb2xvcj0iI2Y0ZjZmYSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNkZGUzZWMiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImxnQyIgeDE9IjAuMiIgeTE9IjAuMSIgeDI9IjAuOCIgeTI9IjAuOTUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmE4NTEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIwLjU1IiBzdG9wLWNvbG9yPSIjZWY4YTJlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Q5NjkxYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ibGdHbG9zcyIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iLjU1Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPHBhdHRlcm4gaWQ9ImxnRG90cyIgd2lkdGg9IjQiIGhlaWdodD0iNCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxjaXJjbGUgY3g9IjIiIGN5PSIyIiByPSIuNyIgZmlsbD0iI2I5NTIwZiIgb3BhY2l0eT0iLjM1Ii8+CiAgICA8L3BhdHRlcm4+CiAgICA8ZmlsdGVyIGlkPSJsZ1NoYWRvdyIgeD0iLTIwJSIgeT0iLTIwJSIgd2lkdGg9IjE0MCUiIGhlaWdodD0iMTQwJSI+CiAgICAgIDxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSIyLjIiIHN0ZERldmlhdGlvbj0iMiIgZmxvb2QtY29sb3I9IiM3YTNhMDgiIGZsb29kLW9wYWNpdHk9Ii4zNSIvPgogICAgPC9maWx0ZXI+CiAgICA8ZmlsdGVyIGlkPSJsZ0lubmVyIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMCIgZHk9IjEuNSIgc3RkRGV2aWF0aW9uPSIyLjUiIGZsb29kLWNvbG9yPSIjMGIyYTVjIiBmbG9vZC1vcGFjaXR5PSIuNDUiLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KICA8IS0tIGFubmVhdSBibGV1IC0tPgogIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iOTciIGZpbGw9InVybCgjbGdSaW5nKSIvPgogIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iOTUuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utb3BhY2l0eT0iLjI1IiBzdHJva2Utd2lkdGg9IjEuMiIvPgogIDwhLS0gZGlzcXVlIGJsYW5jIC0tPgogIDxnIGZpbHRlcj0idXJsKCNsZ0lubmVyKSI+CiAgICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjczIiBmaWxsPSJ1cmwoI2xnRGlzYykiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI3MyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGZiMGUzIiBzdHJva2Utd2lkdGg9IjIuNCIvPgogIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iNjkuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjEuMiIgb3BhY2l0eT0iLjkiLz4KICA8IS0tIEMgb3JhbmdlIC0tPgogIDxnIGZpbHRlcj0idXJsKCNsZ1NoYWRvdykiPgogICAgPHBhdGggZD0iTTExOCA4NC41IEgxNDUuNCBBNDcuNSA0Ny41IDAgMSAwIDE0NS40IDExNS41IEgxMTggQTIzIDIzIDAgMSAxIDExOCA4NC41IFoiIGZpbGw9InVybCgjbGdDKSIvPgogICAgPHBhdGggZD0iTTExOCA4NC41IEgxNDUuNCBBNDcuNSA0Ny41IDAgMSAwIDE0NS40IDExNS41IEgxMTggQTIzIDIzIDAgMSAxIDExOCA4NC41IFoiIGZpbGw9InVybCgjbGdEb3RzKSIvPgogICAgPHBhdGggZD0iTTExOCA4NC41IEgxNDUuNCBBNDcuNSA0Ny41IDAgMSAwIDE0NS40IDExNS41IEgxMTggQTIzIDIzIDAgMSAxIDExOCA4NC41IFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4zNSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPC9nPgo8L3N2Zz4K" alt=""><b id="ft-name">COVO</b></div>
       <p>Ce catalogue est relié à la caisse du magasin : prix, promotions et disponibilité changent au fil des ventes.</p>
     </div>
-    <div><h4>Nous trouver</h4><p id="ft-contact">Rendez-vous en magasin.</p></div>
+    <div><h4>Nous trouver</h4><p id="ft-contact">Rendez-vous en magasin.</p><a class="f-sav" href="#/service-client">Service client &amp; SAV ›</a></div>
     <div><h4>Partager le catalogue</h4><p>Imprimez le QR code du site pour l'afficher en magasin ou le donner à vos clients.</p><div class="qr-acts"><button type="button" onclick="sitePrintQr('a4')">🖨️ Affiche A4</button><button type="button" onclick="sitePrintQr('a6')">🖨️ 4 cartes A6</button></div></div>
     <div><h4>Votre fidélité</h4><p>Suivez vos points et réservez vos articles depuis votre <a href="http://fidelite.covo-trv.fr/" target="_blank" rel="noopener">espace fidélité</a>.</p><p id="ft-acc" style="margin-top:8px"></p></div>
   </div>
@@ -1667,6 +1782,7 @@ function viewAccount(){
       + '</div><form class="chat-f" onsubmit="return msgSend(event,\'' + esc(b.bk) + '\',' + bi + ')"><textarea id="msg-in-' + bi + '" data-bk="' + esc(b.bk) + '" rows="2" maxlength="1000" placeholder="Écrire au magasin à propos de ce panier…" aria-label="Message au magasin pour ce panier">' + esc(S.acc.drafts[b.bk] || '') + '</textarea><button class="btn pri" id="msg-btn-' + bi + '" type="submit">Envoyer</button></form></div></div>';
   });
   h += '</section>';
+  h += '<section class="block" id="acc-sav"></section>';
   // Échéances
   var ech = c.echeances || [];
   if (ech.length) h += '<section class="block">' + secT('Échéances à venir', ech.length) + '<div class="rl">' + ech.map(function(e){ var d = histDate(e.due); return '<div class="ri ech"><div class="ri-tx"><b>' + (d ? d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Date à définir') + '</b></div><b class="amt">' + eur(e.amount) + ' €</b></div>'; }).join('') + '</div></section>';
@@ -1695,12 +1811,14 @@ function viewAccount(){
             + '<dl class="tk-m">' + (x.d ? '<div><dt>Date</dt><dd>' + x.d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) + ' à ' + x.d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + '</dd></div>' : '')
             + (x.h.payment ? '<div><dt>Paiement</dt><dd>' + esc(payTxt(x.h.payment)) + '</dd></div>' : '')
             + (pts ? '<div><dt>Points</dt><dd>' + (pts > 0 ? '+' : '') + pts + '</dd></div>' : '')
-            + (x.h.cashier ? '<div><dt>Caissier</dt><dd>' + esc(x.h.cashier) + '</dd></div>' : '') + '</dl></div></details>';
+            + (x.h.cashier ? '<div><dt>Caissier</dt><dd>' + esc(x.h.cashier) + '</dd></div>' : '') + '</dl>'
+            + (histType(x.h) === 'Achat' ? '<a class="tk-sav" href="javascript:void 0" onclick="savGo({motif:\'produit\',ticket:\'' + esc(String(x.h.ticket || '')) + '\'})">Un problème avec cet achat ? Contacter le SAV</a>' : '') + '</div></details>';
         }).join('') + '</div></details>';
     }).join('') + '</div>';
   }
   h += '</section><div class="acc-foot"><span>Connecté avec le compte client <b>' + esc(S.auth.code) + '</b></span><button class="btn sec sm" onclick="logout()">Se déconnecter</button></div>';
   v.innerHTML = h;
+  if (typeof savMineFill === 'function') savMineFill();
   Array.prototype.forEach.call(document.querySelectorAll('.bk .chat-l'), function(cl){ cl.scrollTop = cl.scrollHeight; });
   if (msgUnread()) { msgMarkRead(); var bb = document.querySelector('#acc-btn .bub'); if (bb) bb.remove(); }
   var code = c.barcode || S.auth.code;
@@ -1713,7 +1831,7 @@ function viewAccount(){
    Un toucher / clic la passe. ═══ */
 function covoIntro(opts){
   opts = opts || {};
-  if (document.getElementById('intro') || document.documentElement.classList.contains('apercu')) return;
+  if (document.getElementById('intro')) return;
   var logo = (document.querySelector('.brand img') || {}).src || '';
   var el = document.createElement('div'); el.id = 'intro'; el.className = 'intro'; el.setAttribute('role', 'img');
   el.setAttribute('aria-label', 'COVO — Plus qu’un magasin, une expérience');
@@ -1826,6 +1944,7 @@ function route(){
   else if (h === '#/nouveautes') viewList('new', null, same);
   else if (h === '#/tous') viewList('all', null, same);
   else if (h === '#/compte') viewAccount();
+  else if (/^#\/service-client/.test(h)) viewSav();
   else if ((m = /^#\/rayon\/(.+)$/.exec(h))) viewList('cat', decodeURIComponent(m[1]), same);
   else if ((m = /^#\/recherche\/(.*)$/.exec(h))) viewList('search', decodeURIComponent(m[1]), same);
   else viewHome(same);
@@ -2007,7 +2126,7 @@ function viewProduct(id, same){
     + (p.price == null ? '' : '<div><dt>Prix</dt><dd>' + (p.unit === 'kg' ? 'au kilo' : 'à l\'unité') + '</dd></div>')
     + (isNew(p) ? '<div><dt>En rayon depuis</dt><dd>' + new Date(Date.parse(p.createdAt)).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + '</dd></div>' : '') + '</dl>'
     + bcBlockHTML(p)
-    + '<div class="pd-cta" id="pd-resa">' + resaBlockHTML(p) + '</div></div>'
+    + '<div class="pd-cta" id="pd-resa">' + resaBlockHTML(p) + '</div><a class="pd-sav" href="javascript:void 0" onclick="savGo({motif:\'produit\',articleId:\'' + esc(String(p.id)) + '\'})">Un problème avec cet article ? Contactez le service client</a></div>'
     + secsHTML(p)
     + '</div></article>'
     + (related.length ? '<section class="block">' + secT('Dans le même rayon', null, '#/rayon/' + enc(p.category), 'Tout le rayon') + rowHTML('row-rel', related) + '</section>' : '');
@@ -2036,7 +2155,7 @@ function paint(){
   document.getElementById('hdr-count').innerHTML = '<b>' + list.length + '</b> articles · <b>' + cats().length + '</b> rayons';
   var tel = shop.phone ? '<span>' + ico('phone','w') + ' <a href="tel:' + esc(String(shop.phone).replace(/\s/g,'')) + '">' + esc(shop.phone) + '</a></span>' : '';
   document.getElementById('u-addr').innerHTML = shop.address ? '' + ico('pin','w') + ' ' + esc(shop.address) : 'Plus qu’un magasin, une expérience';
-  document.getElementById('u-right').innerHTML = tel + (shop.email ? '<span class="opt">' + ico('mail','w') + ' <a href="mailto:' + esc(shop.email) + '">' + esc(shop.email) + '</a></span>' : '') + '<span id="u-acc"></span>';
+  document.getElementById('u-right').innerHTML = '<span><a class="u-sav" href="#/service-client">Service client</a></span>' + tel + (shop.email ? '<span class="opt">' + ico('mail','w') + ' <a href="mailto:' + esc(shop.email) + '">' + esc(shop.email) + '</a></span>' : '') + '<span id="u-acc"></span>';
   accUI();
   var c = [];
   if (shop.address) c.push('' + ico('pin','w') + ' ' + esc(shop.address));
@@ -2133,7 +2252,6 @@ function paint(){
    adresse IP, lieu approximatif, appareil, pages consultées, client fidélité connecté.
    Lecture réservée au magasin (COVO Pro → Catalogue → Site web → Visites). ═══ */
 (function(){
-  if (document.documentElement.classList.contains('apercu')) { try { parent.postMessage({ covoApercu: 1, hash: location.hash }, '*'); addEventListener('hashchange', function(){ parent.postMessage({ covoApercu: 1, hash: location.hash }, '*'); }); } catch(e) {} return; }
   var URL = 'https://firestore.googleapis.com/v1/projects/' + CFG.projectId + '/databases/(default)/documents/visits';
   var KEY = 'covo_vid', id, doc = null, pages = [], dirty = false, timer = 0, ready = null;
   function rid(){ var a = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', r = ''; var b = new Uint8Array(20); (crypto || window.msCrypto).getRandomValues(b); for (var i = 0; i < 20; i++) r += a[b[i] % 62]; return r; }
@@ -2204,6 +2322,231 @@ function paint(){
   document.addEventListener('visibilitychange', function(){ if (document.hidden) flush(true); });
   start();
 })();
+</script>
+<script>
+/* ═══ SERVICE CLIENT / SAV — page #/service-client
+   Le client choisit un motif ; le formulaire s'adapte (article, ticket de caisse, photos, souhait…).
+   La demande est enregistrée dans Firestore (sav/{référence}) et traitée dans COVO Pro → 🛟 SAV.
+   Un client fidélité connecté retrouve ses demandes et les réponses du magasin dans « Mon compte ». ═══ */
+var SAV_MOTIFS = [
+  { k: 'magasin',   l: 'Le magasin COVO : accueil, horaires, services' },
+  { k: 'produit',   l: 'Un produit acheté en magasin : défaut, qualité, date', art: 1, tk: 1, photo: 1, wish: 1 },
+  { k: 'rembourse', l: 'Un remboursement, un échange ou un avoir', art: 1, tk: 1, photo: 1, wish: 1 },
+  { k: 'caisse',    l: 'Mon ticket de caisse / une erreur de prix', art: 1, tk: 1, photo: 1 },
+  { k: 'resa',      l: 'Ma réservation en ligne / mon panier', resa: 1 },
+  { k: 'fid',       l: 'Ma carte de fidélité / mes points', fid: 1 },
+  { k: 'compte',    l: 'Mon compte sur le site / un problème de connexion', fid: 1 },
+  { k: 'rgpd',      l: 'Mes données personnelles' },
+  { k: 'ref',       l: 'Un article que vous aimeriez trouver en rayon', want: 1 },
+  { k: 'pro',       l: 'Vous êtes producteur, fournisseur ou partenaire local', company: 1 },
+  { k: 'autre',     l: 'Autre demande' }
+];
+var SAV_WISH = ['Remboursement', 'Échange', 'Avoir en magasin', 'Simple information'];
+var SAV_STATUS = { nouveau: ['Reçue', 'n'], encours: ['En cours de traitement', 'c'], attente: ['En attente de votre réponse', 'a'], resolu: ['Résolue', 'r'], clos: ['Close', 'x'] };
+S.sav = { pre: null, motif: '', photos: [], sent: null, busy: false, mine: null };
+function savMotif(k){ return SAV_MOTIFS.filter(function(m){ return m.k === k; })[0] || null; }
+function savGo(pre){ S.sav.pre = pre || {}; S.sav.motif = (pre && pre.motif) || ''; S.sav.sent = null; S.sav.photos = []; if (location.hash === '#/service-client') viewSav(); else location.hash = '#/service-client'; }
+function savShop(){ return (S.data && S.data.shop) || {}; }
+function savAside(){
+  var s = savShop(), h = '<aside class="sav-side">';
+  h += '<div class="sav-box"><h3>Nous joindre directement</h3>';
+  if (s.phone) h += '<a class="sav-ch" href="tel:' + esc(String(s.phone).replace(/\s/g, '')) + '">' + ico('phone') + '<span><b>' + esc(s.phone) + '</b><small>Par téléphone, aux heures d\'ouverture</small></span></a>';
+  if (s.whatsapp) h += '<a class="sav-ch" href="https://wa.me/' + esc(s.whatsapp) + '" target="_blank" rel="noopener">' + ico('chat') + '<span><b>WhatsApp</b><small>Réponse dans la journée</small></span></a>';
+  if (s.email) h += '<a class="sav-ch" href="mailto:' + esc(s.email) + '">' + ico('mail') + '<span><b>' + esc(s.email) + '</b><small>Par e-mail</small></span></a>';
+  if (s.address) h += '<div class="sav-ch">' + ico('pin') + '<span><b>À l\'accueil du magasin</b><small>' + esc(s.address) + '</small></span></div>';
+  h += '</div>';
+  h += '<div class="sav-box"><h3>Suivre une demande</h3>' + (S.auth ? '<p>Vos demandes et les réponses du magasin sont dans votre compte.</p><a class="btn sec sm" href="#/compte" onclick="setTimeout(function(){var e=document.getElementById(\'acc-sav\');e&&e.scrollIntoView({behavior:\'smooth\'});},700)">Voir mes demandes</a>'
+    : '<p>Connectez-vous avec votre compte fidélité pour suivre vos demandes et lire les réponses du magasin ici.</p><button type="button" class="btn sec sm" onclick="loginOpen(function(){ viewSav(); })">Se connecter</button>') + '</div>';
+  return h + '</aside>';
+}
+function viewSav(){
+  setNav(''); S.curId = null;
+  document.title = 'Service client — ' + (savShop().name || 'COVO');
+  var v = document.getElementById('view');
+  var h = crumbs([['Service client']]) + '<div class="sav-top"><a class="sav-back" href="javascript:history.length>1?history.back():(location.hash=\'#/\')">' + '<span aria-hidden="true">‹</span> Retour</a></div>'
+    + '<h1 class="sav-h1">Allô ' + esc(savShop().name || 'COVO') + ' : contactez-nous</h1>'
+    + '<div class="sav-lay"><div class="sav-main">';
+  if (S.sav.sent) h += savDoneHTML(S.sav.sent);
+  else {
+    h += '<form class="sav-card" id="sav-form" onsubmit="return savSubmit(event)" novalidate><div class="sav-hd"><h2>Votre demande</h2><span>Réponse sous 48 h ouvrées</span></div>'
+      + '<div class="sav-row sav-motif"><label for="sav-m">Sélectionnez un motif</label><div class="sav-sel"><select id="sav-m" onchange="savPick(this.value)"><option value="">Sélectionnez l\'objet de votre demande</option>'
+      + SAV_MOTIFS.map(function(m){ return '<option value="' + m.k + '"' + (S.sav.motif === m.k ? ' selected' : '') + '>' + esc(m.l) + '</option>'; }).join('') + '</select></div></div>'
+      + '<div id="sav-fields">' + savFieldsHTML() + '</div></form>';
+    h += '<div class="sav-help">' + ico('chat') + '<div><b>Vous préférez en parler de vive voix ?</b><span>Notre équipe vous répond aussi à l\'accueil du magasin, par téléphone ou sur WhatsApp. Toutes les demandes peuvent se faire par écrit.</span></div></div>';
+  }
+  h += '</div>' + savAside() + '</div>';
+  v.innerHTML = h;
+  if (!S.sav.sent && S.sav.motif) savAfterFields();
+  if (S.auth && !S.acc.loaded && typeof loadAccount === 'function') loadAccount(true);
+}
+function savPick(k){ S.sav.motif = k; S.sav.photos = []; var box = document.getElementById('sav-fields'); if (box) { var keep = savCollect(true); box.innerHTML = savFieldsHTML(keep); savAfterFields(); var f = box.querySelector('input,select,textarea'); if (f && k) f.focus({ preventScroll: true }); } }
+function savPurchases(){
+  var c = (S.acc && S.acc.client) || {};
+  return (c.history || []).filter(function(x){ return x && (x.ticket || (Array.isArray(x.items) && x.items.length)) && +x.amount > 0; })
+    .map(function(x){ return { h: x, d: histDate(x.date) }; }).sort(function(a, b){ return (b.d || 0) - (a.d || 0); }).slice(0, 30);
+}
+function savFieldsHTML(keep){
+  var m = savMotif(S.sav.motif), pre = S.sav.pre || {}, k = keep || {};
+  if (!m) return '<div class="sav-empty">' + ico('box') + '<p>Choisissez le motif de votre demande : le formulaire s\'adapte pour ne vous demander que l\'essentiel.</p></div>';
+  var c = (S.acc && S.acc.client) || {}, h = '';
+  function val(n, d){ return esc(k[n] != null ? k[n] : (pre[n] != null ? pre[n] : (d || ''))); }
+  if (m.tk) {
+    var buys = S.auth ? savPurchases() : [];
+    h += '<fieldset class="sav-fs"><legend>Votre achat</legend>';
+    if (buys.length) h += '<div class="sav-row"><label for="sav-buy">Choisir parmi mes achats</label><select id="sav-buy" onchange="savBuy(this.value)"><option value="">— Sélectionner un passage en caisse —</option>'
+      + buys.map(function(b, i){ return '<option value="' + i + '"' + (pre.ticket && String(b.h.ticket) === String(pre.ticket) ? ' selected' : '') + '>' + (b.d ? b.d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date inconnue') + ' · ' + eur(b.h.amount) + ' €' + (b.h.ticket ? ' · ticket N°' + esc(b.h.ticket) : '') + '</option>'; }).join('') + '</select></div>';
+    h += '<div class="sav-g2"><div class="sav-row"><label for="sav-tk">N° du ticket de caisse <i>facultatif</i></label><input id="sav-tk" value="' + val('ticket') + '" inputmode="text" autocomplete="off" placeholder="Imprimé en bas du ticket"></div>'
+      + '<div class="sav-row"><label for="sav-dt">Date d\'achat</label><input id="sav-dt" type="date" value="' + val('buyDate') + '" max="' + new Date().toISOString().slice(0, 10) + '"></div></div>';
+  }
+  if (m.art) {
+    var ap = pre.articleId ? productById(pre.articleId) : null;
+    h += (m.tk ? '' : '<fieldset class="sav-fs"><legend>Votre achat</legend>') + '<div class="sav-row"><label for="sav-art">Article concerné</label><input id="sav-art" list="sav-arts" value="' + val('article', ap ? ap.name : '') + '" autocomplete="off" placeholder="Nom de l\'article"><datalist id="sav-arts"></datalist></div>';
+    if (ap) h += '<input type="hidden" id="sav-aid" value="' + esc(String(ap.id)) + '">';
+  }
+  if (m.tk || m.art) h += '</fieldset>';
+  if (m.wish) h += '<div class="sav-row"><span class="sav-lb">Ce que vous souhaitez</span><div class="sav-chips">' + SAV_WISH.map(function(w, i){ return '<label><input type="radio" name="sav-wish" value="' + esc(w) + '"' + ((k.wish || '') === w ? ' checked' : '') + '><span>' + esc(w) + '</span></label>'; }).join('') + '</div></div>';
+  if (m.resa) {
+    h += '<div class="sav-row"><label for="sav-art">Panier ou article réservé <i>facultatif</i></label><input id="sav-art" value="' + val('article') + '" placeholder="Ex. : panier du 12 octobre, riz jasmin…"></div>';
+  }
+  if (m.want) h += '<div class="sav-row"><label for="sav-art">Article ou marque recherché</label><input id="sav-art" value="' + val('article') + '" placeholder="Ex. : farine de manioc Tropical 1 kg"></div>';
+  if (m.company) h += '<div class="sav-row"><label for="sav-co">Votre entreprise / exploitation</label><input id="sav-co" value="' + val('company') + '" autocomplete="organization"></div>';
+  h += '<div class="sav-row"><label for="sav-msg">Votre message</label><textarea id="sav-msg" rows="5" maxlength="3000" placeholder="Décrivez votre demande le plus précisément possible.">' + val('msg') + '</textarea><small class="sav-cnt" id="sav-cnt"></small></div>';
+  if (m.photo) h += '<div class="sav-row"><span class="sav-lb">Photos <i>facultatif, 3 maximum</i></span><div class="sav-ph" id="sav-ph"></div><label class="btn sec sm sav-add">' + ico('box') + ' Ajouter une photo<input type="file" accept="image/*" capture="environment" onchange="savPhoto(this)" hidden></label><small class="sav-note">Une photo du produit, de l\'étiquette ou du ticket nous aide à vous répondre plus vite.</small></div>';
+  h += '<fieldset class="sav-fs"><legend>Vos coordonnées</legend>'
+    + (S.auth ? '<p class="sav-cl">' + ico('gift') + ' Compte fidélité <b>' + esc(S.auth.code) + '</b> — la demande sera aussi visible dans votre compte.</p>' : (m.fid ? '<div class="sav-row"><label for="sav-code">Code client fidélité <i>s\'il est connu</i></label><input id="sav-code" value="' + val('code') + '" autocapitalize="characters" autocomplete="off"></div>' : ''))
+    + '<div class="sav-row"><label for="sav-nm">Nom et prénom</label><input id="sav-nm" value="' + val('name', c.name || '') + '" autocomplete="name" required></div>'
+    + '<div class="sav-g2"><div class="sav-row"><label for="sav-tel">Téléphone</label><input id="sav-tel" type="tel" inputmode="tel" value="' + val('phone', c.phone || '') + '" autocomplete="tel"></div>'
+    + '<div class="sav-row"><label for="sav-mail">E-mail</label><input id="sav-mail" type="email" inputmode="email" value="' + val('email', c.email || '') + '" autocomplete="email"></div></div>'
+    + '<div class="sav-row"><span class="sav-lb">Vous préférez être recontacté par</span><div class="sav-chips">' + ['Téléphone', 'WhatsApp', 'E-mail'].map(function(w, i){ return '<label><input type="radio" name="sav-pref" value="' + w + '"' + ((k.contact || 'Téléphone') === w ? ' checked' : '') + '><span>' + w + '</span></label>'; }).join('') + '</div></div></fieldset>'
+    + '<label class="sav-ok"><input type="checkbox" id="sav-rgpd"' + (k.rgpd ? ' checked' : '') + '><span>J\'accepte que le magasin utilise ces informations pour traiter ma demande. Elles sont conservées 3 ans au plus et ne sont jamais transmises à des tiers.</span></label>'
+    + '<div class="sav-err" id="sav-err" role="alert"></div>'
+    + '<div class="sav-act"><button class="btn pri" id="sav-btn" type="submit">Envoyer ma demande</button></div>';
+  return h;
+}
+function savAfterFields(){
+  var dl = document.getElementById('sav-arts');
+  if (dl) { var seen = {}; dl.innerHTML = all().map(function(p){ if (seen[p.name]) return ''; seen[p.name] = 1; return '<option value="' + esc(p.name) + '">'; }).join(''); }
+  var ta = document.getElementById('sav-msg'), cnt = document.getElementById('sav-cnt');
+  if (ta && cnt) { var up = function(){ cnt.textContent = ta.value.length + ' / 3000'; }; ta.addEventListener('input', up); up(); }
+  savPhotosRender();
+  var pre = S.sav.pre || {};
+  if (pre.ticket && document.getElementById('sav-buy') && document.getElementById('sav-buy').value) savBuy(document.getElementById('sav-buy').value, true);
+}
+function savBuy(i, keepArt){
+  var b = savPurchases()[+i]; if (!b) return;
+  var tk = document.getElementById('sav-tk'), dt = document.getElementById('sav-dt'), dl = document.getElementById('sav-arts');
+  if (tk) tk.value = b.h.ticket || '';
+  if (dt && b.d) dt.value = new Date(b.d.getTime() - b.d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  if (dl && Array.isArray(b.h.items) && b.h.items.length) dl.innerHTML = b.h.items.map(function(it){ return '<option value="' + esc(it.name) + '">'; }).join('');
+  var a = document.getElementById('sav-art'); if (a && !keepArt && Array.isArray(b.h.items) && b.h.items.length === 1) a.value = b.h.items[0].name;
+}
+function savPhoto(inp){
+  var f = inp.files && inp.files[0]; inp.value = '';
+  if (!f) return;
+  if (S.sav.photos.length >= 3) { toast('3 photos maximum'); return; }
+  if (!/^image\//.test(f.type)) { toast('Ce fichier n\'est pas une image'); return; }
+  var img = new Image(), url = URL.createObjectURL(f);
+  img.onload = function(){
+    var max = 1100, w = img.naturalWidth, h = img.naturalHeight, r = Math.min(1, max / Math.max(w, h));
+    var cv = document.createElement('canvas'); cv.width = Math.round(w * r); cv.height = Math.round(h * r);
+    var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(img, 0, 0, cv.width, cv.height);
+    var q = .72, d = cv.toDataURL('image/jpeg', q);
+    while (d.length > 230000 && q > .3) { q -= .1; d = cv.toDataURL('image/jpeg', q); }
+    if (d.length > 230000) { var c2 = document.createElement('canvas'); c2.width = Math.round(cv.width * .6); c2.height = Math.round(cv.height * .6); c2.getContext('2d').drawImage(cv, 0, 0, c2.width, c2.height); d = c2.toDataURL('image/jpeg', .6); }
+    URL.revokeObjectURL(url); S.sav.photos.push(d); savPhotosRender();
+  };
+  img.onerror = function(){ URL.revokeObjectURL(url); toast('Image illisible'); };
+  img.src = url;
+}
+function savPhotosRender(){
+  var b = document.getElementById('sav-ph'); if (!b) return;
+  b.innerHTML = S.sav.photos.map(function(d, i){ return '<span><img src="' + d + '" alt="Photo ' + (i + 1) + '"><button type="button" onclick="S.sav.photos.splice(' + i + ',1);savPhotosRender()" aria-label="Retirer la photo">✕</button></span>'; }).join('');
+  var add = document.querySelector('.sav-add'); if (add) add.style.display = S.sav.photos.length >= 3 ? 'none' : '';
+}
+function savCollect(loose){
+  function g(id){ var e = document.getElementById(id); return e ? String(e.value || '').trim() : ''; }
+  function r(n){ var e = document.querySelector('input[name="' + n + '"]:checked'); return e ? e.value : ''; }
+  var rg = document.getElementById('sav-rgpd');
+  return { ticket: g('sav-tk'), buyDate: g('sav-dt'), article: g('sav-art'), articleId: g('sav-aid'), company: g('sav-co'), msg: g('sav-msg'),
+    name: g('sav-nm'), phone: g('sav-tel'), email: g('sav-mail'), code: g('sav-code'), wish: r('sav-wish'), contact: r('sav-pref') || 'Téléphone', rgpd: !!(rg && rg.checked) };
+}
+function savRef(){ var a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = '', b = new Uint8Array(5); crypto.getRandomValues(b); for (var i = 0; i < 5; i++) s += a[b[i] % a.length]; var d = new Date(); return 'SAV-' + String(d.getFullYear()).slice(2) + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2) + '-' + s; }
+function savSubmit(ev){
+  ev.preventDefault();
+  var m = savMotif(S.sav.motif), x = savCollect(), err = document.getElementById('sav-err'), bad = null;
+  function no(id, t){ if (!bad) bad = [id, t]; }
+  if (!m) no('sav-m', 'Choisissez le motif de votre demande.');
+  if (x.msg.length < 10) no('sav-msg', 'Décrivez votre demande en quelques mots (10 caractères au moins).');
+  if (m && m.want && !x.article) no('sav-art', 'Indiquez l\'article que vous recherchez.');
+  if (!x.name) no('sav-nm', 'Indiquez votre nom.');
+  if (!x.phone && !x.email) no('sav-tel', 'Indiquez un téléphone ou un e-mail pour que nous puissions vous répondre.');
+  if (x.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x.email)) no('sav-mail', 'L\'adresse e-mail n\'est pas valide.');
+  if (x.phone && x.phone.replace(/\D/g, '').length < 9) no('sav-tel', 'Le numéro de téléphone n\'est pas valide.');
+  if (x.contact === 'E-mail' && !x.email) no('sav-mail', 'Indiquez votre e-mail pour être recontacté par e-mail.');
+  if ((x.contact === 'Téléphone' || x.contact === 'WhatsApp') && !x.phone) no('sav-tel', 'Indiquez votre numéro pour être recontacté par ' + x.contact + '.');
+  if (!x.rgpd) no('sav-rgpd', 'Cochez la case pour accepter le traitement de votre demande.');
+  Array.prototype.forEach.call(document.querySelectorAll('.sav-card .bad'), function(e){ e.classList.remove('bad'); });
+  if (bad) { err.textContent = bad[1]; var e = document.getElementById(bad[0]); if (e) { e.classList.add('bad'); e.focus(); } return false; }
+  err.textContent = '';
+  if (x.articleId) { var ap = productById(x.articleId); if (!ap || ap.name !== x.article) x.articleId = ''; }
+  if (!x.articleId && x.article) { var hit = all().filter(function(p){ return p.name === x.article; })[0]; if (hit) x.articleId = String(hit.id); }
+  var ref = savRef(), btn = document.getElementById('sav-btn');
+  var rec = { ref: ref, at: new Date().toISOString(), status: 'nouveau', motif: m.k, motifLabel: m.l, wish: x.wish, article: x.article, articleId: x.articleId,
+    ticket: x.ticket, buyDate: x.buyDate, company: x.company, msg: x.msg, name: x.name, phone: x.phone, email: x.email, contact: x.contact,
+    client: (S.auth && S.auth.code) || x.code.toUpperCase(), uid: (S.auth && S.auth.uid) || '', photos: S.sav.photos.slice(0, 3) };
+  var fields = {}; Object.keys(rec).forEach(function(k2){ fields[k2] = k2 === 'at' ? { timestampValue: rec.at } : fsEnc(rec[k2]); });
+  btn.disabled = true; btn.textContent = 'Envoi en cours…';
+  (S.auth ? authToken().catch(function(){ return null; }) : Promise.resolve(null)).then(function(t){
+    if (!t) { rec.uid = ''; fields.uid = fsEnc(''); }
+    var hd = { 'Content-Type': 'application/json' }; if (t) hd.Authorization = 'Bearer ' + t;
+    return fetch(FS_DOCS + 'sav?documentId=' + ref, { method: 'POST', headers: hd, body: JSON.stringify({ fields: fields }) });
+  }).then(function(r){
+    if (!r.ok) throw new Error(r.status === 403 ? 'refus' : 'HTTP ' + r.status);
+    S.sav.sent = rec; S.sav.photos = []; S.sav.pre = null; S.sav.mine = null;
+    try { var l = JSON.parse(localStorage.getItem('covo_sav_refs') || '[]'); l.unshift(ref); localStorage.setItem('covo_sav_refs', JSON.stringify(l.slice(0, 20))); } catch(e) {}
+    viewSav(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  }).catch(function(e){
+    err.textContent = /refus/.test(e.message) ? 'Le service client en ligne n\'est pas encore activé. Contactez-nous par téléphone ou WhatsApp.' : 'L\'envoi a échoué : vérifiez votre connexion internet puis réessayez.';
+    btn.disabled = false; btn.textContent = 'Envoyer ma demande';
+  });
+  return false;
+}
+function savDoneHTML(r){
+  return '<div class="sav-card sav-done"><div class="sav-ok-ic" aria-hidden="true">✓</div><h2>Votre demande est bien envoyée</h2>'
+    + '<p>Notez votre numéro de demande : il vous sera demandé si vous nous contactez à ce sujet.</p><div class="sav-ref">' + esc(r.ref) + '</div>'
+    + '<dl class="sav-sum"><div><dt>Motif</dt><dd>' + esc(r.motifLabel) + '</dd></div>' + (r.article ? '<div><dt>Article</dt><dd>' + esc(r.article) + '</dd></div>' : '') + (r.ticket ? '<div><dt>Ticket</dt><dd>N°' + esc(r.ticket) + '</dd></div>' : '')
+    + '<div><dt>Réponse</dt><dd>Sous 48 h ouvrées, par ' + esc(r.contact.toLowerCase()) + '</dd></div></dl>'
+    + '<div class="sav-act">' + (S.auth ? '<a class="btn pri" href="#/compte">Suivre dans mon compte</a>' : '') + '<button type="button" class="btn sec" onclick="savGo()">Faire une autre demande</button><a class="btn sec" href="#/">Retour au catalogue</a></div></div>';
+}
+/* « Mon compte » : liste des demandes du client et réponses du magasin */
+function savMineLoad(){
+  if (!S.auth || !S.auth.uid) return Promise.resolve([]);
+  return authToken().then(function(t){
+    return fetch(FS_DOCS.replace(/\/$/, '') + ':runQuery', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t },
+      body: JSON.stringify({ structuredQuery: { from: [{ collectionId: 'sav' }], where: { fieldFilter: { field: { fieldPath: 'uid' }, op: 'EQUAL', value: { stringValue: S.auth.uid } } },
+        select: { fields: ['ref', 'at', 'status', 'motifLabel', 'article', 'ticket', 'msg', 'replies', 'updatedAt'].map(function(f){ return { fieldPath: f }; }) }, limit: 50 } }) });
+  }).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(function(rows){
+    var out = []; (rows || []).forEach(function(x){ if (x.document) { var o = {}, f = x.document.fields || {}; Object.keys(f).forEach(function(k){ o[k] = fsDec(f[k]); }); out.push(o); } });
+    return out.sort(function(a, b){ return String(b.at).localeCompare(String(a.at)); });
+  });
+}
+function savMineHTML(list){
+  var h = secT('Mes demandes au service client', list.length) ;
+  if (!list.length) return h + '<div class="empty">Aucune demande pour le moment. <a href="#/service-client">Contacter le service client</a></div>';
+  return h + '<div class="sav-mine">' + list.map(function(d, i){
+    var st = SAV_STATUS[d.status] || SAV_STATUS.nouveau, rep = (d.replies || []).filter(Boolean);
+    return '<details class="sav-it"' + (i === 0 ? ' open' : '') + '><summary><span class="sav-st ' + st[1] + '">' + st[0] + '</span><span class="sav-it-t"><b>' + esc(d.motifLabel || 'Demande') + '</b><small>' + esc(d.ref) + ' · ' + (histDate(d.at) ? histDate(d.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '') + (rep.length ? ' · ' + rep.length + ' réponse' + (rep.length > 1 ? 's' : '') : '') + '</small></span><span class="chev"></span></summary>'
+      + '<div class="sav-th"><div class="msg me"><div class="mb">' + esc(d.msg) + '</div><small>Vous' + (d.article ? ' · ' + esc(d.article) : '') + (d.ticket ? ' · ticket N°' + esc(d.ticket) : '') + '</small></div>'
+      + rep.map(function(r){ return '<div class="msg shop"><div class="mb">' + esc(r.text) + '</div><small>' + esc(r.by || 'Le magasin') + ' · ' + (histDate(r.at) ? histDate(r.at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '') + '</small></div>'; }).join('')
+      + (!rep.length ? '<p class="sav-wait">Le magasin a bien reçu votre demande et vous répond sous 48 h ouvrées.</p>' : '')
+      + '<a class="sav-more" href="javascript:savGo({motif:\'autre\',msg:\'À propos de ma demande ' + esc(d.ref) + ' : \'})">Compléter ma demande</a></div></details>';
+  }).join('') + '</div>';
+}
+function savMineFill(){
+  var box = document.getElementById('acc-sav'); if (!box) return;
+  if (S.sav.mine) box.innerHTML = savMineHTML(S.sav.mine);
+  savMineLoad().then(function(l){ S.sav.mine = l; var b = document.getElementById('acc-sav'); if (b) b.innerHTML = savMineHTML(l); }).catch(function(){ var b = document.getElementById('acc-sav'); if (b && !S.sav.mine) b.innerHTML = ''; });
+}
 </script>
 </body>
 </html>
